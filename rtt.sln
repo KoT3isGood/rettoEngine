@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34031.279
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rttEngine", "rttEngine\rttEngine.vcxproj", "{D6EBE376-12D4-4584-870B-31282F1BEDE4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rttGameTemplate", "rttGameTemplate\rttGameTemplate.vcxproj", "{96999394-5561-4826-B74F-BF1D827FC8B8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rttAppTemlate", "rttAppTemlate\rttAppTemlate.vcxproj", "{F0329305-7EA5-41E1-9521-385B951C35C7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		DebugGame|x64 = DebugGame|x64
+		Editor|x64 = Editor|x64
+		Server|x64 = Server|x64
+		Shipping|x64 = Shipping|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D6EBE376-12D4-4584-870B-31282F1BEDE4}.DebugGame|x64.ActiveCfg = NoEditor|x64
+		{D6EBE376-12D4-4584-870B-31282F1BEDE4}.DebugGame|x64.Build.0 = NoEditor|x64
+		{D6EBE376-12D4-4584-870B-31282F1BEDE4}.Editor|x64.ActiveCfg = Editor|x64
+		{D6EBE376-12D4-4584-870B-31282F1BEDE4}.Editor|x64.Build.0 = Editor|x64
+		{D6EBE376-12D4-4584-870B-31282F1BEDE4}.Server|x64.ActiveCfg = NoEditor|x64
+		{D6EBE376-12D4-4584-870B-31282F1BEDE4}.Server|x64.Build.0 = NoEditor|x64
+		{D6EBE376-12D4-4584-870B-31282F1BEDE4}.Shipping|x64.ActiveCfg = NoEditor|x64
+		{D6EBE376-12D4-4584-870B-31282F1BEDE4}.Shipping|x64.Build.0 = NoEditor|x64
+		{96999394-5561-4826-B74F-BF1D827FC8B8}.DebugGame|x64.ActiveCfg = Debug|x64
+		{96999394-5561-4826-B74F-BF1D827FC8B8}.DebugGame|x64.Build.0 = Debug|x64
+		{96999394-5561-4826-B74F-BF1D827FC8B8}.Editor|x64.ActiveCfg = Debug|x64
+		{96999394-5561-4826-B74F-BF1D827FC8B8}.Editor|x64.Build.0 = Debug|x64
+		{96999394-5561-4826-B74F-BF1D827FC8B8}.Server|x64.ActiveCfg = Server|x64
+		{96999394-5561-4826-B74F-BF1D827FC8B8}.Server|x64.Build.0 = Server|x64
+		{96999394-5561-4826-B74F-BF1D827FC8B8}.Shipping|x64.ActiveCfg = Release|x64
+		{96999394-5561-4826-B74F-BF1D827FC8B8}.Shipping|x64.Build.0 = Release|x64
+		{F0329305-7EA5-41E1-9521-385B951C35C7}.DebugGame|x64.ActiveCfg = Debug|x64
+		{F0329305-7EA5-41E1-9521-385B951C35C7}.DebugGame|x64.Build.0 = Debug|x64
+		{F0329305-7EA5-41E1-9521-385B951C35C7}.Editor|x64.ActiveCfg = Debug|x64
+		{F0329305-7EA5-41E1-9521-385B951C35C7}.Editor|x64.Build.0 = Debug|x64
+		{F0329305-7EA5-41E1-9521-385B951C35C7}.Server|x64.ActiveCfg = Release|x64
+		{F0329305-7EA5-41E1-9521-385B951C35C7}.Server|x64.Build.0 = Release|x64
+		{F0329305-7EA5-41E1-9521-385B951C35C7}.Shipping|x64.ActiveCfg = Release|x64
+		{F0329305-7EA5-41E1-9521-385B951C35C7}.Shipping|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7D8C37A5-37FB-4C6A-9791-56AB2516516C}
+	EndGlobalSection
+EndGlobal
