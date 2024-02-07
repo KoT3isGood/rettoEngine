@@ -4,6 +4,8 @@
 
 Win64Surface::Win64Surface(const char* windowName)
 {
+	getProcessInfo()->surface = this;
+
 	const wchar_t CLASS_NAME[] = L"Sample Window Class";
 
 	// Create wc
@@ -51,8 +53,10 @@ Win64Surface::Win64Surface(const char* windowName)
 
 	ShowWindow(Handle, SW_SHOW);
 	UpdateWindow(Handle);
-
-
+	resolutionX = winSize.right - winSize.left;
+	resolutionY = winSize.bottom - winSize.top;
+	
+	instance = GetModuleHandle(NULL);
 
 
 	vkLayer = new VulkanLayer();
@@ -68,6 +72,8 @@ Win64Surface::~Win64Surface()
 
 void Win64Surface::StartUpdateLoop()
 {
+	resolutionX = winSize.right - winSize.left;
+	resolutionY = winSize.bottom - winSize.top;
 	// Loop
 	MSG msg;
 	while (shouldRun) {

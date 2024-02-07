@@ -13,4 +13,4 @@
 void logData(std::string data, std::string runnerName);
 #define RTT_LOG(x) logData(x,RTT_CURRENT_APP)
 
-#define RTT_ASSERT(x) assert(x);
+#define RTT_ASSERT(x) assert(x)

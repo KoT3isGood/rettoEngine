@@ -21,4 +21,7 @@ public:
 
 	// Update surface
 	virtual void StartUpdateLoop();
+
+	float resolutionX = 0;
+	float resolutionY = 0;
 };

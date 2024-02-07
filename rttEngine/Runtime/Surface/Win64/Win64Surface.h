@@ -7,8 +7,8 @@
 #include "Runtime\Surface\Surface.h"
 
 #include "Runtime\Layers\Layer.h"
+class VulkanLayer;
 #include "Rendering\Vulkan\VulkanLayer.h"
-
 
 /*
 * Win32 Window Generator
@@ -29,6 +29,11 @@ public:
 
 	// ~Update surface
 	virtual void StartUpdateLoop() override;
+
+	// Handler of the window
+	HWND Handle = nullptr;
+
+	HINSTANCE instance = nullptr;
 private:
 	Layer renderingLayers;
 
@@ -43,7 +48,5 @@ private:
 	// Window handler
 	static LRESULT CALLBACK WindowEventHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	// Handler of the window
-	HWND Handle = nullptr;
 };
 #endif
