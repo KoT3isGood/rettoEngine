@@ -14,9 +14,16 @@ class Win64Surface;
 #include "Runtime\Surface\Win64\Win64Surface.h"
 #endif
 
+#include "Rendering\ShaderCompiler\Shader.h"
+
 #include <vector>
 #include "Runtime\Application\ProcessInfo.h"
 
+
+
+#include "Modules\Instance.h"
+#include "Modules\DebugMessenger.h"
+#include "Modules\LogicalDevice.h"
 
 class VulkanLayer : public RenderingLayer {
 public:
@@ -24,63 +31,20 @@ public:
 	~VulkanLayer();
 	virtual void Draw() override;
 private:
-	bool validationLayers = false;
+	rttvk::Instance instance = rttvk::Instance({
+		VK_KHR_SURFACE_EXTENSION_NAME,
+		VK_EXT_DEBUG_UTILS_EXTENSION_NAME
+		},{
+			"VK_LAYER_KHRONOS_validation"
+		});
+	rttvk::DebugMessenger debugMessenger = rttvk::DebugMessenger(&instance);
+	VkPhysicalDevice chosenPhysicalDevice;
+	rttvk::LogicalDevice logicalDevice = rttvk::LogicalDevice(&chosenPhysicalDevice, {
+			VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+			VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+			VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		},{
 
-
-	//~Instance
-	VkInstance instance;
-
-	void CreateInstance();
-	//~Instance
-
-	//~Validation Layers
-	VkDebugUtilsMessengerEXT messenger;
-
-	void CreateValidationLayers();
-
-	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-		VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-		VkDebugUtilsMessageTypeFlagsEXT message_types,
-		const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
-		void* user_data
-	);
-	//~Validation Layers
-
-	// ~Physical Device
-	VkPhysicalDevice physicalDevice;
-
-	void SelectPhysicalDevice();
-	// ~Physical Device
-
-	// ~Logical Device
-	VkDevice logicalDevice;
-
-	void CreateLogicalDevice();
-	// ~Logical Device
-
-	// ~Queues
-	void GetQueues();
-
-	uint32_t graphicsFamily = -1;
-	uint32_t presentFamily = -1;
-	// ~Queues
-
-	// ~Surface
-	VkSurfaceKHR surface;
-
-	void CreateSurface();
-	// ~Surface
-
-	// ~Swapchain
-	VkSwapchainKHR swapchain;
-	void CreateSwapchain();
-	// ~Swapchain
-
-	// ~Images
-
-	void CreateImageViews();
-
-	std::vector<VkImage> swImages;
-	std::vector<VkImageView> swImageViews;
-	// ~Images
+		});
 };
