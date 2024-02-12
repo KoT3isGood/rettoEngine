@@ -2,21 +2,26 @@
 #include <filesystem>
 #include <string>
 #include <fstream>
-#include "Runtime\Logging\Logger.h"
-#include "vulkan\vulkan.h"
 
 #include "Runtime\Application\ProcessInfo.h"
-class Shader {
-public:
-	Shader(std::string filepath);
-	// TODO: Add loading from registry
+
+#include "Rendering\Vulkan\Modules\LogicalDevice.h"
+#include "Rendering\Vulkan\Modules\Module.h"
+
+namespace rttvk {
+	class Shader: public Module {
+	public:
+		Shader(std::string filepath, LogicalDevice* device, VkShaderStageFlagBits stage);
+		// TODO: Add loading from registry
 
 
-	std::string assemblyPath;
-	void loadAssemblies(VkDevice device, VkShaderStageFlagBits stage);
+		std::string assemblyPath;
+		virtual void Create() override;
+		virtual void Destroy() override;
 
-	VkDevice device;
-
-	VkShaderModule shaderModule;
-	VkPipelineShaderStageCreateInfo shaderStageInfo{};
-};
+		LogicalDevice* device;
+		VkShaderStageFlagBits stage;
+		VkShaderModule shaderModule;
+		VkPipelineShaderStageCreateInfo shaderStageInfo{};
+	};
+}

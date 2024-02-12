@@ -4,7 +4,8 @@
 
 #include "Vulkan\vulkan.h"
 
-
+namespace rttvk{
+}
 // Win32
 #ifdef Win64
 #include <windows.h>
@@ -14,7 +15,7 @@ class Win64Surface;
 #include "Runtime\Surface\Win64\Win64Surface.h"
 #endif
 
-#include "Rendering\ShaderCompiler\Shader.h"
+
 
 #include <vector>
 #include "Runtime\Application\ProcessInfo.h"
@@ -24,6 +25,10 @@ class Win64Surface;
 #include "Modules\Instance.h"
 #include "Modules\DebugMessenger.h"
 #include "Modules\LogicalDevice.h"
+#include "Modules\SurfaceKHR.h"
+#include "Modules\Swapchain.h"
+#include "Modules\ImageView.h"
+#include "Rendering\ShaderCompiler\Shader.h"
 
 class VulkanLayer : public RenderingLayer {
 public:
@@ -33,7 +38,11 @@ public:
 private:
 	rttvk::Instance instance = rttvk::Instance({
 		VK_KHR_SURFACE_EXTENSION_NAME,
+		// TODO: ADD IFDEF FOR DIFFERENT PLATFORMS
+		VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
+
 		VK_EXT_DEBUG_UTILS_EXTENSION_NAME
+
 		},{
 			"VK_LAYER_KHRONOS_validation"
 		});
@@ -47,4 +56,12 @@ private:
 		},{
 
 		});
+	// TODO: ADD IFDEF FOR DIFFERENT PLATFORMS
+	Win64Surface* win64surface = (Win64Surface*)getProcessInfo()->surface;
+
+	rttvk::SurfaceKHR surface = rttvk::SurfaceKHR();
+	rttvk::Swapchain swapchain = rttvk::Swapchain(&surface, &logicalDevice);
+
+	std::vector<VkImage> images;
+	std::vector<rttvk::ImageView> imageViews;
 };

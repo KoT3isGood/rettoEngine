@@ -98,9 +98,12 @@
   <ItemGroup>
     <ClCompile Include="Rendering\ShaderCompiler\Shader.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\DebugMessenger.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\ImageView.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\Instance.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\LogicalDevice.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\Module.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\SurfaceKHR.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\Swapchain.cpp" />
     <ClCompile Include="Rendering\Vulkan\VulkanLayer.cpp" />
     <ClCompile Include="Runtime\Application\ProcessInfo.cpp" />
     <ClCompile Include="Runtime\Layers\Layer.cpp" />
@@ -113,9 +116,12 @@
   <ItemGroup>
     <ClInclude Include="Rendering\ShaderCompiler\Shader.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\DebugMessenger.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\ImageView.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\Instance.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\LogicalDevice.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\Module.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\SurfaceKHR.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\Swapchain.h" />
     <ClInclude Include="Rendering\Vulkan\VulkanLayer.h" />
     <ClInclude Include="Runtime\Application\AppInfo.h" />
     <ClInclude Include="Runtime\Application\AppGeneration.h" />

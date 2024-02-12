@@ -7,6 +7,10 @@
 #include "Runtime\Surface\Surface.h"
 
 #include "Runtime\Layers\Layer.h"
+namespace rttvk {
+
+	class SurfaceKHR;
+}
 class VulkanLayer;
 #include "Rendering\Vulkan\VulkanLayer.h"
 

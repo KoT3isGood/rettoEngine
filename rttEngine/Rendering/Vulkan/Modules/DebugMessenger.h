@@ -15,7 +15,7 @@ namespace rttvk {
 			VkDebugUtilsMessageTypeFlagsEXT messageType,
 			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 			void* pUserData) {
-			RTT_LOG(pCallbackData->pMessage);
+			RTT_LOG("[ VULKAN ] " + std::string(pCallbackData->pMessage));
 			return VK_FALSE;
 		}
 		VkDebugUtilsMessengerEXT debugMessenger;
