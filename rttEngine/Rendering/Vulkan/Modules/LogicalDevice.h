@@ -12,6 +12,9 @@ namespace rttvk {
 		VkPhysicalDevice* GetPhysicalDevice();
 		VkQueue GetGraphicsQueue();
 		VkQueue GetPresentQueue();
+
+		uint32_t GetGraphicsQueueIndex();
+		uint32_t GetPresentQueueIndex();
 	private:
 		VkDevice device;
 		std::vector<const char*> extensions;

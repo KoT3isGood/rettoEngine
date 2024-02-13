@@ -20,7 +20,9 @@ class VulkanLayer;
 */
 class Win64Surface: public Surface {
 public:
-	
+	float previousTime = 0.0;
+	float currentTime = 0.0;
+	float timeToTitleUpdate = 0.0;
 
 	// Default Constructor
 	Win64Surface() = default;

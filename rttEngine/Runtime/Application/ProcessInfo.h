@@ -2,6 +2,7 @@
 #include "AppInfo.h"
 #include "Runtime\Layers\RenderingLayer.h"
 #include "Runtime\Surface\Surface.h"
+#include <chrono>
 
 struct ProcessInfo {
 	int argc;
@@ -12,3 +13,4 @@ struct ProcessInfo {
 };
 
 ProcessInfo* getProcessInfo();
+float getRunningTime();

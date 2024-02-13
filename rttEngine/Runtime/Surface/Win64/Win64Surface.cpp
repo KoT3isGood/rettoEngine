@@ -72,19 +72,37 @@ Win64Surface::~Win64Surface()
 
 void Win64Surface::StartUpdateLoop()
 {
-	resolutionX = winSize.right - winSize.left;
-	resolutionY = winSize.bottom - winSize.top;
-	// Loop
 	MSG msg;
 	while (shouldRun) {
+		
 
+		currentTime = getRunningTime();
+		float delta = currentTime - previousTime;
+		previousTime = currentTime;
+		
 
+		timeToTitleUpdate += delta;
+		if (timeToTitleUpdate>=1.0f ) {
+			timeToTitleUpdate = 0;
+			float fps = 1 / delta;
+			std::string tmp = std::to_string(fps);
+			if (fps > 10000) {
+				tmp = "this NASA PC enjoyer has " + std::to_string(fps) + " fps";
+			}
+
+			SetWindowTextA(Handle, tmp.c_str());
+		}
+
+		resolutionX = winSize.right - winSize.left;
+		resolutionY = winSize.bottom - winSize.top;
+		// Loop
 		if (PeekMessage(&msg, NULL, NULL, NULL, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
 		}
-
-		Sleep(1);
+		vkLayer->Draw();
+		
+		
 	}
 }
 LRESULT Win64Surface::WindowEventHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

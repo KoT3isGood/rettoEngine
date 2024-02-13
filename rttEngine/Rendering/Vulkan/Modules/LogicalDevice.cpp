@@ -79,4 +79,12 @@ namespace rttvk {
 	{
 		return presentQueue;
 	}
+	uint32_t LogicalDevice::GetGraphicsQueueIndex()
+	{
+		return graphicsFamily;
+	}
+	uint32_t LogicalDevice::GetPresentQueueIndex()
+	{
+		return presentFamily;
+	}
 }

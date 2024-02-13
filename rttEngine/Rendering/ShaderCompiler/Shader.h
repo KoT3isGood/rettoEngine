@@ -11,6 +11,7 @@
 namespace rttvk {
 	class Shader: public Module {
 	public:
+		Shader() = default;
 		Shader(std::string filepath, LogicalDevice* device, VkShaderStageFlagBits stage);
 		// TODO: Add loading from registry
 

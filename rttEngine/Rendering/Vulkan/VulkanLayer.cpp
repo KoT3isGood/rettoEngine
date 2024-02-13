@@ -33,40 +33,20 @@ VulkanLayer::VulkanLayer()
 		imageViews[i].Create();
 	}
 
-	rttvk::Shader computeShader = rttvk::Shader("Content/EngineLoad/Shaders/shader.comp", &logicalDevice, VK_SHADER_STAGE_COMPUTE_BIT);
+	computeShader = rttvk::Shader("Content/EngineLoad/Shaders/shader.comp", &logicalDevice, VK_SHADER_STAGE_COMPUTE_BIT);
 	computeShader.Create();
 
-	VkPipelineLayout layout;
-
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	//pipelineLayoutInfo.setLayoutCount = 1;
-	//pipelineLayoutInfo.pSetLayouts = &computeDescriptorSetLayout;
-	VK_CREATE_VALIDATION(vkCreatePipelineLayout(logicalDevice.GetDevice(), &pipelineLayoutInfo, nullptr, &layout), VkPipelineLayout);
-
-
-
-	VkPipelineCache pc{};
-	VkPipelineCacheCreateInfo cache{};
-	cache.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-	VK_CREATE_VALIDATION(vkCreatePipelineCache(logicalDevice.GetDevice(), &cache,nullptr, &pc), VkPipelineCache);
-
-	VkComputePipelineCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-	createInfo.layout = layout;
-	createInfo.stage = computeShader.shaderStageInfo;
-
-	VkPipeline pipeline;
-	
-	VK_CREATE_VALIDATION(vkCreateComputePipelines(logicalDevice.GetDevice(), pc, 1, &createInfo, nullptr, &pipeline), VkPipeline);
+	pipeline.Create();
 	computeShader.Destroy();
 
+	commandPool.Create();
+	commandBuffer.Create();
 
 
-
-
-
-
+	renderFinished.Create();
+	imageAvailable.Create();
+	inFlightFence.Create();
+	
 
 
 	
@@ -74,6 +54,12 @@ VulkanLayer::VulkanLayer()
 
 VulkanLayer::~VulkanLayer()
 {
+	vkDeviceWaitIdle(logicalDevice.GetDevice());
+	inFlightFence.Destroy();
+	imageAvailable.Destroy();
+	renderFinished.Destroy();
+	commandPool.Destroy();
+	pipeline.Destroy();
 	for (int i = 0; i < imageViews.size(); i++) {
 		imageViews[i].Destroy();
 	}
@@ -84,6 +70,55 @@ VulkanLayer::~VulkanLayer()
 	instance.Destroy();
 }
 
+void VulkanLayer::RecordCommandBuffer()
+{
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
+	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipeline());
+	vkEndCommandBuffer(commandBuffer.GetBuffer());
+}
 void VulkanLayer::Draw()
 {
+
+	VkFence fence = inFlightFence.GetFence();
+	vkWaitForFences(logicalDevice.GetDevice(), 1, &fence, VK_FALSE, UINT64_MAX);
+	vkResetFences(logicalDevice.GetDevice(), 1, &fence);
+
+	uint32_t imageIndex = 0;
+	vkAcquireNextImageKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), UINT64_MAX, imageAvailable.GetSemaphore(), inFlightFence.GetFence(), &imageIndex);
+
+	vkResetCommandBuffer(commandBuffer.GetBuffer(), 0);
+
+	RecordCommandBuffer();
+
+	VkCommandBuffer cb = commandBuffer.GetBuffer();
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	VkSemaphore waitSemaphores[] = { imageAvailable.GetSemaphore() };
+	VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = &waitStages;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &cb;
+	VkSemaphore signalSemaphores[] = { renderFinished.GetSemaphore() };
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+
+	vkQueueSubmit(logicalDevice.GetGraphicsQueue(), 1, &submitInfo, inFlightFence.GetFence());
+
+
+	VkPresentInfoKHR presentInfo{};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = signalSemaphores;
+	VkSwapchainKHR swapchains[] = { swapchain.GetSwapchain() };
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapchains;
+	presentInfo.pImageIndices = &imageIndex;
+	vkQueuePresentKHR(logicalDevice.GetPresentQueue(), &presentInfo);
+	//RTT_LOG(std::to_string(getRunningTime()));
 }
+

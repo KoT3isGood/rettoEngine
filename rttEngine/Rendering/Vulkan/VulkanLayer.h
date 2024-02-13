@@ -15,7 +15,7 @@ class Win64Surface;
 #include "Runtime\Surface\Win64\Win64Surface.h"
 #endif
 
-
+#include <chrono>
 
 #include <vector>
 #include "Runtime\Application\ProcessInfo.h"
@@ -29,6 +29,11 @@ class Win64Surface;
 #include "Modules\Swapchain.h"
 #include "Modules\ImageView.h"
 #include "Rendering\ShaderCompiler\Shader.h"
+#include "Modules\Pipeline.h"
+#include "Modules\CommandPool.h"
+#include "Modules\CommandBuffer.h"
+#include "Modules\SyncGPU.h"
+
 
 class VulkanLayer : public RenderingLayer {
 public:
@@ -46,7 +51,9 @@ private:
 		},{
 			"VK_LAYER_KHRONOS_validation"
 		});
+
 	rttvk::DebugMessenger debugMessenger = rttvk::DebugMessenger(&instance);
+
 	VkPhysicalDevice chosenPhysicalDevice;
 	rttvk::LogicalDevice logicalDevice = rttvk::LogicalDevice(&chosenPhysicalDevice, {
 			VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
@@ -61,7 +68,18 @@ private:
 
 	rttvk::SurfaceKHR surface = rttvk::SurfaceKHR();
 	rttvk::Swapchain swapchain = rttvk::Swapchain(&surface, &logicalDevice);
-
 	std::vector<VkImage> images;
 	std::vector<rttvk::ImageView> imageViews;
+
+	rttvk::Shader computeShader = rttvk::Shader();
+	rttvk::Pipeline pipeline = rttvk::Pipeline(&computeShader,&logicalDevice);
+
+	rttvk::CommandPool commandPool = rttvk::CommandPool(&logicalDevice);
+	rttvk::CommandBuffer commandBuffer = rttvk::CommandBuffer(&logicalDevice, &commandPool);
+
+	rttvk::Semaphore renderFinished = rttvk::Semaphore(&logicalDevice);
+	rttvk::Semaphore imageAvailable = rttvk::Semaphore(&logicalDevice);
+	rttvk::Fence inFlightFence = rttvk::Fence(&logicalDevice);
+
+	void RecordCommandBuffer();
 };
