@@ -4,3 +4,4 @@
 .gitattributes
 Build/
 BuildTrash/
+/rttAppTemlate/x64/Debug
