@@ -18,6 +18,7 @@ namespace rttvk {
 		virtual void Create() override;
 		virtual void Destroy() override;
 		VkFence GetFence();
+		VkFence* GetFenceP();
 	private:
 		LogicalDevice* device;
 		VkFence fence;

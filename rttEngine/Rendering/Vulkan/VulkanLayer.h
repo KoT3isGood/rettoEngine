@@ -33,7 +33,7 @@ class Win64Surface;
 #include "Modules\CommandPool.h"
 #include "Modules\CommandBuffer.h"
 #include "Modules\SyncGPU.h"
-
+#define VK_VALIDATE(result, vkStruct) if(result!=VK_SUCCESS) {RTT_LOG(std::string("[ VULKAN ] FAILED TO USE ")+#vkStruct);RTT_ASSERT(0);}
 
 class VulkanLayer : public RenderingLayer {
 public:
@@ -59,7 +59,8 @@ private:
 			VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
 			VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
 			VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+			VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME
 		},{
 
 		});
@@ -81,5 +82,7 @@ private:
 	rttvk::Semaphore imageAvailable = rttvk::Semaphore(&logicalDevice);
 	rttvk::Fence inFlightFence = rttvk::Fence(&logicalDevice);
 
-	void RecordCommandBuffer();
+	VkImage renderImage;
+
+	void RecordCommandBuffer(uint32_t imageIndex);
 };

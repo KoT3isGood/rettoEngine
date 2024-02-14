@@ -38,5 +38,9 @@ namespace rttvk {
 	{
 		return fence;
 	}
+	VkFence* Fence::GetFenceP()
+	{
+		return &fence;
+	}
 }
 

@@ -70,27 +70,70 @@ VulkanLayer::~VulkanLayer()
 	instance.Destroy();
 }
 
-void VulkanLayer::RecordCommandBuffer()
+void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
+	VkImageSubresourceRange access;
+	access.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	access.baseMipLevel = 0;
+	access.levelCount = 1;
+	access.baseArrayLayer = 0;
+	access.layerCount = 1;
+
+	VkImageMemoryBarrier barrier;
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.srcAccessMask = VK_ACCESS_NONE_KHR;
+	barrier.dstAccessMask = VK_ACCESS_NONE_KHR;
+	barrier.image = images[imageIndex];
+	barrier.subresourceRange = access;
+	barrier.pNext = nullptr;
+
+	VkPipelineStageFlags sourceStage = 0, destinationStage = 0;
+
+	
+
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipeline());
+	vkCmdDispatch(commandBuffer.GetBuffer(), 1280, 720, 1);
+	vkCmdPipelineBarrier(commandBuffer.GetBuffer(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 	vkEndCommandBuffer(commandBuffer.GetBuffer());
 }
 void VulkanLayer::Draw()
 {
-
-	VkFence fence = inFlightFence.GetFence();
-	vkWaitForFences(logicalDevice.GetDevice(), 1, &fence, VK_FALSE, UINT64_MAX);
-	vkResetFences(logicalDevice.GetDevice(), 1, &fence);
+	vkWaitForFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP(), VK_FALSE, UINT64_MAX);
+	vkResetFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP());
 
 	uint32_t imageIndex = 0;
 	vkAcquireNextImageKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), UINT64_MAX, imageAvailable.GetSemaphore(), inFlightFence.GetFence(), &imageIndex);
 
+
+	VkImageCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	createInfo.usage = VK_IMAGE_USAGE_STORAGE_BIT;
+	createInfo.imageType = VK_IMAGE_TYPE_2D;
+	createInfo.extent.width = 1280;
+	createInfo.extent.height = 720;
+	createInfo.extent.depth = 1;
+	createInfo.mipLevels = 1;
+	createInfo.arrayLayers = 1;
+	createInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+	createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+
+	vkCreateImage(logicalDevice.GetDevice(), &createInfo, nullptr, &renderImage);
+	vkDestroyImage(logicalDevice.GetDevice(), renderImage, nullptr);
+
 	vkResetCommandBuffer(commandBuffer.GetBuffer(), 0);
 
-	RecordCommandBuffer();
+	RecordCommandBuffer(imageIndex);
 
 	VkCommandBuffer cb = commandBuffer.GetBuffer();
 
@@ -107,8 +150,8 @@ void VulkanLayer::Draw()
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	vkQueueSubmit(logicalDevice.GetGraphicsQueue(), 1, &submitInfo, inFlightFence.GetFence());
-
+	//vkWaitForFences(logicalDevice.GetDevice(), 1, &fence, VK_FALSE, UINT64_MAX);
+	VK_VALIDATE(vkQueueSubmit(logicalDevice.GetGraphicsQueue(), 1, &submitInfo, inFlightFence.GetFence()), vkQueueSubmit);
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
