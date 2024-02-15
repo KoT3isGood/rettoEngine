@@ -2,7 +2,7 @@
 
 VulkanLayer::VulkanLayer()
 {
-	
+
 	instance.Create();
 	debugMessenger.Create();
 
@@ -28,7 +28,7 @@ VulkanLayer::VulkanLayer()
 	imageViews.resize(imageCount);
 	vkGetSwapchainImagesKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), &imageCount, images.data());
 
-	for (int i = 0; i < imageViews.size();i++) {
+	for (int i = 0; i < imageViews.size(); i++) {
 		imageViews[i] = rttvk::ImageView(&logicalDevice, images[0]);
 		imageViews[i].Create();
 	}
@@ -46,15 +46,60 @@ VulkanLayer::VulkanLayer()
 	renderFinished.Create();
 	imageAvailable.Create();
 	inFlightFence.Create();
+
+	VkImageCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	createInfo.imageType = VK_IMAGE_TYPE_2D;
+	createInfo.extent.width = 1280;
+	createInfo.extent.height = 720;
+	createInfo.extent.depth = 1;
+	createInfo.mipLevels = 1;
+	createInfo.arrayLayers = 1;
+	createInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+	createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	createInfo.usage = VK_IMAGE_USAGE_STORAGE_BIT;
+	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+
+
+	vkCreateImage(logicalDevice.GetDevice(), &createInfo, nullptr, &renderImage);
+
+	VkDescriptorPoolSize poolSize = {};
+	poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	poolSize.descriptorCount = 1;
+
+	VkDescriptorPoolCreateInfo poolCreateInfo = {};
+	poolCreateInfo.poolSizeCount = 1;
+	poolCreateInfo.pPoolSizes = &poolSize;
+	poolCreateInfo.maxSets = 1;
+
+	vkCreateDescriptorPool(logicalDevice.GetDevice(), &poolCreateInfo, nullptr, &descPool);
+
+	VkDescriptorSetAllocateInfo allocateInfo = {};
+	allocateInfo.descriptorPool = descPool;
+	allocateInfo.descriptorSetCount = 1;
+	auto layout = pipeline.GetDescriptorLayout();
+	allocateInfo.pSetLayouts = &layout;
+
+	vkAllocateDescriptorSets(logicalDevice.GetDevice(), &allocateInfo, &descSet);
+
+	renderImageView = rttvk::ImageView(&logicalDevice, images[0]);
+	renderImageView.Create();
+
 	
-
-
 	
 }
 
 VulkanLayer::~VulkanLayer()
 {
 	vkDeviceWaitIdle(logicalDevice.GetDevice());
+
+	//vkDestroyDescriptorSet(logicalDevice.GetDevice(), descSet, nullptr);
+	vkDestroyDescriptorPool(logicalDevice.GetDevice(), descPool, nullptr);
+	renderImageView.Destroy();
+	vkDestroyImage(logicalDevice.GetDevice(), renderImage, nullptr);
 	inFlightFence.Destroy();
 	imageAvailable.Destroy();
 	renderFinished.Destroy();
@@ -93,46 +138,49 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 
 	VkPipelineStageFlags sourceStage = 0, destinationStage = 0;
 
+	VkDescriptorImageInfo imageInfo = {};
+	imageInfo.imageView = renderImageView.GetImageView();
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	VkWriteDescriptorSet writeDescriptorSet = {};
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.dstSet = descSet;
+	writeDescriptorSet.dstBinding = 0;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	writeDescriptorSet.descriptorCount = 1;
+	writeDescriptorSet.pImageInfo = &imageInfo;
+
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 1, &writeDescriptorSet, 0, nullptr);
+
+
+
 	
+
+
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipeline());
+	//vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipelineLayout(), 0, 1, &descSet, 0, nullptr);
 	vkCmdDispatch(commandBuffer.GetBuffer(), 1280, 720, 1);
 	vkCmdPipelineBarrier(commandBuffer.GetBuffer(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 	vkEndCommandBuffer(commandBuffer.GetBuffer());
 }
 void VulkanLayer::Draw()
 {
-	vkWaitForFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP(), VK_FALSE, UINT64_MAX);
+
+	RTT_LOG("Let's see how much errors here");
+	vkWaitForFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP(), VK_TRUE, UINT64_MAX);
 	vkResetFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP());
 
 	uint32_t imageIndex = 0;
 	vkAcquireNextImageKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), UINT64_MAX, imageAvailable.GetSemaphore(), inFlightFence.GetFence(), &imageIndex);
 
 
-	VkImageCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	createInfo.usage = VK_IMAGE_USAGE_STORAGE_BIT;
-	createInfo.imageType = VK_IMAGE_TYPE_2D;
-	createInfo.extent.width = 1280;
-	createInfo.extent.height = 720;
-	createInfo.extent.depth = 1;
-	createInfo.mipLevels = 1;
-	createInfo.arrayLayers = 1;
-	createInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-	createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-
-	vkCreateImage(logicalDevice.GetDevice(), &createInfo, nullptr, &renderImage);
-	vkDestroyImage(logicalDevice.GetDevice(), renderImage, nullptr);
-
 	vkResetCommandBuffer(commandBuffer.GetBuffer(), 0);
 
+	
 	RecordCommandBuffer(imageIndex);
 
 	VkCommandBuffer cb = commandBuffer.GetBuffer();
@@ -162,6 +210,5 @@ void VulkanLayer::Draw()
 	presentInfo.pSwapchains = swapchains;
 	presentInfo.pImageIndices = &imageIndex;
 	vkQueuePresentKHR(logicalDevice.GetPresentQueue(), &presentInfo);
-	//RTT_LOG(std::to_string(getRunningTime()));
 }
 

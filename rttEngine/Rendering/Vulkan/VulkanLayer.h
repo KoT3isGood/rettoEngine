@@ -82,6 +82,10 @@ private:
 	rttvk::Semaphore imageAvailable = rttvk::Semaphore(&logicalDevice);
 	rttvk::Fence inFlightFence = rttvk::Fence(&logicalDevice);
 
+	VkDescriptorPool descPool;
+	VkDescriptorSet descSet;
+
+	rttvk::ImageView renderImageView;
 	VkImage renderImage;
 
 	void RecordCommandBuffer(uint32_t imageIndex);

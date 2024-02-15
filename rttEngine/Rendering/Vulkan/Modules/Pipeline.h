@@ -10,6 +10,8 @@ namespace rttvk {
 		virtual void Create() override;
 		virtual void Destroy() override;
 		VkPipeline GetPipeline();
+		VkDescriptorSetLayout GetDescriptorLayout();
+		VkPipelineLayout GetPipelineLayout();
 	private:
 		Shader* shader;
 		LogicalDevice* device;
@@ -17,5 +19,6 @@ namespace rttvk {
 		VkPipelineLayout layout;
 		VkPipelineCache cache;
 		VkPipeline pipeline;
+		VkDescriptorSetLayout descriptor;
 	};
 }

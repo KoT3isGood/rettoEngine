@@ -8,6 +8,7 @@ namespace rttvk {
 		virtual void Create() override;
 		virtual void Destroy() override;
 		VkSemaphore GetSemaphore();
+		VkSemaphore* GetSemaphoreP();
 	private:
 		LogicalDevice* device;
 		VkSemaphore semaphore;

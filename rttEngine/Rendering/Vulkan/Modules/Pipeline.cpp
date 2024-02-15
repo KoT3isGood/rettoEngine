@@ -8,12 +8,23 @@ namespace rttvk{
 	}
 	void Pipeline::Create()
 	{
-		
+		VkDescriptorSetLayoutBinding binding{};
+		binding.binding = 0;
+		binding.descriptorCount = 1;
+		binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+		binding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+
+		VkDescriptorSetLayoutCreateInfo descriptorInfo{};
+		descriptorInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		descriptorInfo.bindingCount = 1;
+		descriptorInfo.pBindings = &binding;
+
+		VK_CREATE_VALIDATION(vkCreateDescriptorSetLayout(device->GetDevice(), &descriptorInfo, nullptr, &descriptor), VkDescriptorSetLayout);
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		//pipelineLayoutInfo.setLayoutCount = 1;
-		//pipelineLayoutInfo.pSetLayouts = &computeDescriptorSetLayout;
+		pipelineLayoutInfo.pSetLayouts = &descriptor;
+		pipelineLayoutInfo.setLayoutCount = 1;
 		VK_CREATE_VALIDATION(vkCreatePipelineLayout(device->GetDevice(), &pipelineLayoutInfo, nullptr, &layout), VkPipelineLayout);
 
 
@@ -36,10 +47,19 @@ namespace rttvk{
 		vkDestroyPipeline(device->GetDevice(), pipeline, nullptr);
 		vkDestroyPipelineCache(device->GetDevice(), cache, nullptr);
 		vkDestroyPipelineLayout(device->GetDevice(), layout, nullptr);
+		vkDestroyDescriptorSetLayout(device->GetDevice(), descriptor, nullptr);
 	}
 	VkPipeline Pipeline::GetPipeline()
 	{
 		return pipeline;
+	}
+	VkDescriptorSetLayout Pipeline::GetDescriptorLayout()
+	{
+		return descriptor;
+	}
+	VkPipelineLayout Pipeline::GetPipelineLayout()
+	{
+		return layout;
 	}
 }
 

@@ -19,6 +19,10 @@ namespace rttvk {
 	{
 		return semaphore;
 	}
+	VkSemaphore* Semaphore::GetSemaphoreP()
+	{
+		return &semaphore;
+	}
 	Fence::Fence(LogicalDevice* device)
 	{
 		this->device = device;

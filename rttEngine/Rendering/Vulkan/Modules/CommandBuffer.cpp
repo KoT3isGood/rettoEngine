@@ -18,4 +18,8 @@ namespace rttvk {
     {
         return buffer;
     }
+    VkCommandBuffer* CommandBuffer::GetBufferP()
+    {
+        return &buffer;
+    }
 }

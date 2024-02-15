@@ -8,6 +8,7 @@ namespace rttvk {
 		CommandBuffer(LogicalDevice* device, CommandPool* pool);
 		virtual void Create() override;
 		VkCommandBuffer GetBuffer();
+		VkCommandBuffer* GetBufferP();
 	private:
 		LogicalDevice* device;
 		CommandPool* pool;
