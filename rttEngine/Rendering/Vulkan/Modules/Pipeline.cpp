@@ -8,16 +8,27 @@ namespace rttvk{
 	}
 	void Pipeline::Create()
 	{
+		std::vector<VkDescriptorSetLayoutBinding> bindings;
+
 		VkDescriptorSetLayoutBinding binding{};
 		binding.binding = 0;
 		binding.descriptorCount = 1;
 		binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 		binding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 
+		VkDescriptorSetLayoutBinding binding2{};
+		binding2.binding = 1;
+		binding2.descriptorCount = 1;
+		binding2.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		binding2.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+
+		bindings.push_back(binding);
+		bindings.push_back(binding2);
+
 		VkDescriptorSetLayoutCreateInfo descriptorInfo{};
 		descriptorInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorInfo.bindingCount = 1;
-		descriptorInfo.pBindings = &binding;
+		descriptorInfo.bindingCount = bindings.size();
+		descriptorInfo.pBindings = bindings.data();
 
 		VK_CREATE_VALIDATION(vkCreateDescriptorSetLayout(device->GetDevice(), &descriptorInfo, nullptr, &descriptor), VkDescriptorSetLayout);
 

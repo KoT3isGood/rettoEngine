@@ -117,30 +117,12 @@ VulkanLayer::~VulkanLayer()
 
 void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
-	VkImageSubresourceRange access;
-	access.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	access.baseMipLevel = 0;
-	access.levelCount = 1;
-	access.baseArrayLayer = 0;
-	access.layerCount = 1;
-
-	VkImageMemoryBarrier barrier;
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.srcAccessMask = VK_ACCESS_NONE_KHR;
-	barrier.dstAccessMask = VK_ACCESS_NONE_KHR;
-	barrier.image = images[imageIndex];
-	barrier.subresourceRange = access;
-	barrier.pNext = nullptr;
-
+	
 	VkPipelineStageFlags sourceStage = 0, destinationStage = 0;
 
 	VkDescriptorImageInfo imageInfo = {};
 	imageInfo.imageView = renderImageView.GetImageView();
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	VkWriteDescriptorSet writeDescriptorSet = {};
 	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -150,7 +132,24 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	writeDescriptorSet.descriptorCount = 1;
 	writeDescriptorSet.pImageInfo = &imageInfo;
 
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 1, &writeDescriptorSet, 0, nullptr);
+	
+	// TODO: Create buffer
+	VkDescriptorBufferInfo dbi;
+	dbi.buffer;
+
+	VkWriteDescriptorSet writeDescriptorSet2 = {};
+	writeDescriptorSet2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet2.dstSet = descSet;
+	writeDescriptorSet2.dstBinding = 1;
+	writeDescriptorSet2.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+	writeDescriptorSet2.descriptorCount = 1;
+	writeDescriptorSet2.pBufferInfo = &dbi;
+
+	std::vector<VkWriteDescriptorSet> writedescsets;
+	writedescsets.push_back(writeDescriptorSet);
+	writedescsets.push_back(writeDescriptorSet2);
+
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), writedescsets.size(), writedescsets.data(), 0, nullptr);
 
 
 
@@ -161,22 +160,23 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
+	//vkCmdPipelineBarrier(commandBuffer.GetBuffer(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipeline());
-	//vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipelineLayout(), 0, 1, &descSet, 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipelineLayout(), 0, 1, &descSet, 0, nullptr);
 	vkCmdDispatch(commandBuffer.GetBuffer(), 1280, 720, 1);
-	vkCmdPipelineBarrier(commandBuffer.GetBuffer(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	//vkCmdPipelineBarrier(commandBuffer.GetBuffer(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 	vkEndCommandBuffer(commandBuffer.GetBuffer());
 }
 void VulkanLayer::Draw()
 {
 
-	RTT_LOG("Let's see how much errors here");
+	//RTT_LOG("---------------------------------------------------\n new frame\n---------------------------------------------------");
 	vkWaitForFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP(), VK_TRUE, UINT64_MAX);
 	vkResetFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP());
 
 	uint32_t imageIndex = 0;
 	vkAcquireNextImageKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), UINT64_MAX, imageAvailable.GetSemaphore(), inFlightFence.GetFence(), &imageIndex);
-
+	//RTT_LOG("CurrentImage: "+ std::to_string(imageIndex));
 
 	vkResetCommandBuffer(commandBuffer.GetBuffer(), 0);
 
