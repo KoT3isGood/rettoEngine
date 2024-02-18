@@ -93,9 +93,10 @@ VulkanLayer::VulkanLayer()
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
 	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	vkAllocateMemory(logicalDevice.GetDevice(), &allocInfo, nullptr, &memory);
-	vkMapMemory(logicalDevice.GetDevice(), memory, 0, 8, 0, &mapped);
-	memcpy(mapped, resolutionBuf, sizeof(resolutionBuf));
+	VK_CREATE_VALIDATION(vkAllocateMemory(logicalDevice.GetDevice(), &allocInfo, nullptr, &memory), VkMemory);
+	VK_CREATE_VALIDATION(vkMapMemory(logicalDevice.GetDevice(), memory, 0, 8, 0, &mapped), VkMemory);
+
+	vkBindBufferMemory(logicalDevice.GetDevice(), resbuffer, memory, 0);
 	
 }
 
@@ -125,7 +126,8 @@ VulkanLayer::~VulkanLayer()
 
 void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
-	
+	memcpy(mapped, resolutionBuf, sizeof(resolutionBuf));
+
 	VkPipelineStageFlags sourceStage = 0, destinationStage = 0;
 
 	VkDescriptorImageInfo imageInfo = {};
@@ -138,6 +140,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	writeDescriptorSet.dstBinding = 0;
 	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	writeDescriptorSet.descriptorCount = 1;
+
 	writeDescriptorSet.pImageInfo = &imageInfo;
 
 	
@@ -151,7 +154,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	writeDescriptorSet2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	writeDescriptorSet2.dstSet = descSet;
 	writeDescriptorSet2.dstBinding = 1;
-	writeDescriptorSet2.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+	writeDescriptorSet2.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	writeDescriptorSet2.descriptorCount = 1;
 	writeDescriptorSet2.pBufferInfo = &dbi;
 
@@ -175,7 +178,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	//vkCmdPipelineBarrier(commandBuffer.GetBuffer(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipeline());
 	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipelineLayout(), 0, 1, &descSet, 0, nullptr);
-	vkCmdDispatch(commandBuffer.GetBuffer(), 1280, 720, 1);
+	vkCmdDispatch(commandBuffer.GetBuffer(), 1280*0.125, 720 * 0.125, 1);
 	//vkCmdPipelineBarrier(commandBuffer.GetBuffer(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 	vkEndCommandBuffer(commandBuffer.GetBuffer());
 }
@@ -185,16 +188,16 @@ void VulkanLayer::Draw()
 	RTT_LOG("---------------------------------------------------\n new frame\n---------------------------------------------------");
 	vkWaitForFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP(), VK_TRUE, UINT64_MAX);
 	vkResetFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP());
-
+	//RTT_LOG("1");
 	uint32_t imageIndex = 0;
 	vkAcquireNextImageKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), UINT64_MAX, imageAvailable.GetSemaphore(), inFlightFence.GetFence(), &imageIndex);
 	//RTT_LOG("CurrentImage: "+ std::to_string(imageIndex));
 
 	vkResetCommandBuffer(commandBuffer.GetBuffer(), 0);
 
-	
+	//RTT_LOG("2");
 	RecordCommandBuffer(imageIndex);
-
+	//RTT_LOG("3");
 	VkCommandBuffer cb = commandBuffer.GetBuffer();
 
 	VkSubmitInfo submitInfo{};

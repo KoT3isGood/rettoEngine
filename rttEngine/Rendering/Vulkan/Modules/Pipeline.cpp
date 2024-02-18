@@ -22,6 +22,7 @@ namespace rttvk{
 		binding2.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		binding2.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 
+
 		bindings.push_back(binding);
 		bindings.push_back(binding2);
 
