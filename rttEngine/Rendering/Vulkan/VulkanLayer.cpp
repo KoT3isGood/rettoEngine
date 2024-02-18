@@ -47,48 +47,55 @@ VulkanLayer::VulkanLayer()
 	imageAvailable.Create();
 	inFlightFence.Create();
 
-	VkImageCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	createInfo.imageType = VK_IMAGE_TYPE_2D;
-	createInfo.extent.width = 1280;
-	createInfo.extent.height = 720;
-	createInfo.extent.depth = 1;
-	createInfo.mipLevels = 1;
-	createInfo.arrayLayers = 1;
-	createInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-	createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	createInfo.usage = VK_IMAGE_USAGE_STORAGE_BIT;
-	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-
-
-	vkCreateImage(logicalDevice.GetDevice(), &createInfo, nullptr, &renderImage);
-
 	VkDescriptorPoolSize poolSize = {};
 	poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	poolSize.descriptorCount = 1;
 
+	VkDescriptorPoolSize poolSize2 = {};
+	poolSize2.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSize2.descriptorCount = 1;
+
+	VkDescriptorPoolSize poolSizes[] = { poolSize,poolSize2 };
+
 	VkDescriptorPoolCreateInfo poolCreateInfo = {};
-	poolCreateInfo.poolSizeCount = 1;
-	poolCreateInfo.pPoolSizes = &poolSize;
+	poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolCreateInfo.poolSizeCount = 2;
+	poolCreateInfo.pPoolSizes = poolSizes;
 	poolCreateInfo.maxSets = 1;
 
-	vkCreateDescriptorPool(logicalDevice.GetDevice(), &poolCreateInfo, nullptr, &descPool);
+	VK_CREATE_VALIDATION(vkCreateDescriptorPool(logicalDevice.GetDevice(), &poolCreateInfo, nullptr, &descPool),VkDescriptorPool);
 
 	VkDescriptorSetAllocateInfo allocateInfo = {};
+	allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocateInfo.descriptorPool = descPool;
 	allocateInfo.descriptorSetCount = 1;
 	auto layout = pipeline.GetDescriptorLayout();
 	allocateInfo.pSetLayouts = &layout;
 
-	vkAllocateDescriptorSets(logicalDevice.GetDevice(), &allocateInfo, &descSet);
+	VK_CREATE_VALIDATION(vkAllocateDescriptorSets(logicalDevice.GetDevice(), &allocateInfo, &descSet), VkDescriptorSet);
 
-	renderImageView = rttvk::ImageView(&logicalDevice, images[0]);
-	renderImageView.Create();
 
-	
+	VkBufferCreateInfo bufferCreateInfo{};
+	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferCreateInfo.flags = 0;
+	bufferCreateInfo.size = 8;
+	bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	bufferCreateInfo.queueFamilyIndexCount = 1;
+	uint32_t queue = logicalDevice.GetPresentQueueIndex();
+	bufferCreateInfo.pQueueFamilyIndices = &queue;
+
+	VK_CREATE_VALIDATION(vkCreateBuffer(logicalDevice.GetDevice(), &bufferCreateInfo, nullptr, &resbuffer),VkBuffer);
+
+	vkGetBufferMemoryRequirements(logicalDevice.GetDevice(), resbuffer, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	vkAllocateMemory(logicalDevice.GetDevice(), &allocInfo, nullptr, &memory);
+	vkMapMemory(logicalDevice.GetDevice(), memory, 0, 8, 0, &mapped);
+	memcpy(mapped, resolutionBuf, sizeof(resolutionBuf));
 	
 }
 
@@ -96,10 +103,11 @@ VulkanLayer::~VulkanLayer()
 {
 	vkDeviceWaitIdle(logicalDevice.GetDevice());
 
+	vkUnmapMemory(logicalDevice.GetDevice(), memory);
+	vkDestroyBuffer(logicalDevice.GetDevice(), resbuffer, nullptr);
+
 	//vkDestroyDescriptorSet(logicalDevice.GetDevice(), descSet, nullptr);
 	vkDestroyDescriptorPool(logicalDevice.GetDevice(), descPool, nullptr);
-	renderImageView.Destroy();
-	vkDestroyImage(logicalDevice.GetDevice(), renderImage, nullptr);
 	inFlightFence.Destroy();
 	imageAvailable.Destroy();
 	renderFinished.Destroy();
@@ -121,7 +129,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	VkPipelineStageFlags sourceStage = 0, destinationStage = 0;
 
 	VkDescriptorImageInfo imageInfo = {};
-	imageInfo.imageView = renderImageView.GetImageView();
+	imageInfo.imageView = imageViews[imageIndex].GetImageView();
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	VkWriteDescriptorSet writeDescriptorSet = {};
@@ -135,7 +143,9 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	
 	// TODO: Create buffer
 	VkDescriptorBufferInfo dbi;
-	dbi.buffer;
+	dbi.buffer = resbuffer;
+	dbi.offset = 0;
+	dbi.range = 8;
 
 	VkWriteDescriptorSet writeDescriptorSet2 = {};
 	writeDescriptorSet2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -160,6 +170,8 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
+	
+	//vkCmdUpdateBuffer(commandBuffer.GetBuffer(), resbuffer,0,8, resolutionBuf);
 	//vkCmdPipelineBarrier(commandBuffer.GetBuffer(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipeline());
 	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipelineLayout(), 0, 1, &descSet, 0, nullptr);
@@ -169,8 +181,8 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 }
 void VulkanLayer::Draw()
 {
-
-	//RTT_LOG("---------------------------------------------------\n new frame\n---------------------------------------------------");
+	
+	RTT_LOG("---------------------------------------------------\n new frame\n---------------------------------------------------");
 	vkWaitForFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP(), VK_TRUE, UINT64_MAX);
 	vkResetFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP());
 

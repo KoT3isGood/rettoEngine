@@ -85,8 +85,23 @@ private:
 	VkDescriptorPool descPool;
 	VkDescriptorSet descSet;
 
-	rttvk::ImageView renderImageView;
-	VkImage renderImage;
+	VkDeviceMemory memory;
 
+	VkBuffer resbuffer;
+	float resolutionBuf[2] = { 1280, 720 };
+	void* mapped;
 	void RecordCommandBuffer(uint32_t imageIndex);
+	VkMemoryRequirements memRequirements;
+	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(chosenPhysicalDevice, &memProperties);
+
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+				return i;
+			}
+		}
+
+		throw std::runtime_error("failed to find suitable memory type!");
+	}
 };
