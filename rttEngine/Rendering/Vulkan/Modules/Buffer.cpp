@@ -35,6 +35,7 @@ namespace rttvk {
 	void Buffer::Destroy()
 	{
 		vkUnmapMemory(device->GetDevice(), memory);
+		vkFreeMemory(device->GetDevice(), memory, nullptr);
 		vkDestroyBuffer(device->GetDevice(), buffer, nullptr);
 	}
 	VkBuffer Buffer::GetBuffer()
