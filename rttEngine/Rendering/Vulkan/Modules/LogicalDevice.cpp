@@ -9,6 +9,7 @@ namespace rttvk {
 	}
 	void LogicalDevice::Create()
 	{
+
 		// Queues
 		uint32_t queueCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(*physicalDevice, &queueCount, nullptr);
@@ -26,7 +27,6 @@ namespace rttvk {
 				break;
 			};
 		}
-
 		// TODO: Test if extension is enabled and then create features
 		VkPhysicalDeviceSynchronization2Features sync2Features{};
 		sync2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
@@ -41,7 +41,6 @@ namespace rttvk {
 		rtPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
 		rtPipelineFeatures.rayTracingPipeline = VK_TRUE;
 		rtPipelineFeatures.pNext = &accStructureFeatures;
-
 		// Device Create info
 		float priority = 1.0; // Should Always be 1.0
 		VkDeviceQueueCreateInfo queueCreateInfo{};
@@ -60,9 +59,6 @@ namespace rttvk {
 		createInfo.pQueueCreateInfos = &queueCreateInfo;
 		createInfo.pNext = &rtPipelineFeatures;
 
-
-		std::cout << "Physical Device " << *physicalDevice << "\n";
-		std::cout << "Create info " << &createInfo << "\n";
 		VK_CREATE_VALIDATION(vkCreateDevice(*physicalDevice, &createInfo, nullptr, &device), VkDevice);
 		vkGetDeviceQueue(device, graphicsFamily, 0, &graphicsQueue);
 		vkGetDeviceQueue(device, presentFamily, 0, &presentQueue);

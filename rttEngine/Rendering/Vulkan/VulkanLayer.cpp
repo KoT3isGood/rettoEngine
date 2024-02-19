@@ -73,30 +73,8 @@ VulkanLayer::VulkanLayer()
 	allocateInfo.pSetLayouts = &layout;
 
 	VK_CREATE_VALIDATION(vkAllocateDescriptorSets(logicalDevice.GetDevice(), &allocateInfo, &descSet), VkDescriptorSet);
+	buffer.Create();
 
-
-	VkBufferCreateInfo bufferCreateInfo{};
-	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferCreateInfo.flags = 0;
-	bufferCreateInfo.size = 8;
-	bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	bufferCreateInfo.queueFamilyIndexCount = 1;
-	uint32_t queue = logicalDevice.GetPresentQueueIndex();
-	bufferCreateInfo.pQueueFamilyIndices = &queue;
-
-	VK_CREATE_VALIDATION(vkCreateBuffer(logicalDevice.GetDevice(), &bufferCreateInfo, nullptr, &resbuffer),VkBuffer);
-
-	vkGetBufferMemoryRequirements(logicalDevice.GetDevice(), resbuffer, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	VK_CREATE_VALIDATION(vkAllocateMemory(logicalDevice.GetDevice(), &allocInfo, nullptr, &memory), VkMemory);
-	VK_CREATE_VALIDATION(vkMapMemory(logicalDevice.GetDevice(), memory, 0, 8, 0, &mapped), VkMemory);
-
-	vkBindBufferMemory(logicalDevice.GetDevice(), resbuffer, memory, 0);
 	
 }
 
@@ -104,8 +82,10 @@ VulkanLayer::~VulkanLayer()
 {
 	vkDeviceWaitIdle(logicalDevice.GetDevice());
 
-	vkUnmapMemory(logicalDevice.GetDevice(), memory);
-	vkDestroyBuffer(logicalDevice.GetDevice(), resbuffer, nullptr);
+	buffer.Destroy();
+
+	//vkUnmapMemory(logicalDevice.GetDevice(), memory);
+	//vkDestroyBuffer(logicalDevice.GetDevice(), resbuffer, nullptr);
 
 	//vkDestroyDescriptorSet(logicalDevice.GetDevice(), descSet, nullptr);
 	vkDestroyDescriptorPool(logicalDevice.GetDevice(), descPool, nullptr);
@@ -126,7 +106,7 @@ VulkanLayer::~VulkanLayer()
 
 void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
-	memcpy(mapped, resolutionBuf, sizeof(resolutionBuf));
+	memcpy(buffer.GetMapped(), resolutionBuf, sizeof(resolutionBuf));
 
 	VkPipelineStageFlags sourceStage = 0, destinationStage = 0;
 
@@ -144,9 +124,8 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	writeDescriptorSet.pImageInfo = &imageInfo;
 
 	
-	// TODO: Create buffer
 	VkDescriptorBufferInfo dbi;
-	dbi.buffer = resbuffer;
+	dbi.buffer = buffer.GetBuffer();
 	dbi.offset = 0;
 	dbi.range = 8;
 
@@ -157,7 +136,6 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	writeDescriptorSet2.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	writeDescriptorSet2.descriptorCount = 1;
 	writeDescriptorSet2.pBufferInfo = &dbi;
-
 	std::vector<VkWriteDescriptorSet> writedescsets;
 	writedescsets.push_back(writeDescriptorSet);
 	writedescsets.push_back(writeDescriptorSet2);

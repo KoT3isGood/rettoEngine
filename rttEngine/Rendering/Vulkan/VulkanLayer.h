@@ -33,6 +33,7 @@ class Win64Surface;
 #include "Modules\CommandPool.h"
 #include "Modules\CommandBuffer.h"
 #include "Modules\SyncGPU.h"
+#include "Modules\Buffer.h"
 #define VK_VALIDATE(result, vkStruct) if(result!=VK_SUCCESS) {RTT_LOG(std::string("[ VULKAN ] FAILED TO USE ")+#vkStruct);RTT_ASSERT(0);}
 
 class VulkanLayer : public RenderingLayer {
@@ -87,6 +88,8 @@ private:
 	VkDescriptorSet descSet;
 
 	VkDeviceMemory memory;
+
+	rttvk::Buffer buffer = rttvk::Buffer(&logicalDevice,8,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
 	VkBuffer resbuffer;
 	float resolutionBuf[2] = { 1280, 720 };

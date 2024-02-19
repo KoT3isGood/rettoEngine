@@ -3,6 +3,7 @@
 namespace rttvk{
 	Pipeline::Pipeline(Shader* shader, LogicalDevice* device)
 	{
+		
 		this->shader = shader;
 		this->device = device;
 	}

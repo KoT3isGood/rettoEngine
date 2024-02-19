@@ -97,6 +97,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Rendering\ShaderCompiler\Shader.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\Buffer.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\CommandBuffer.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\CommandPool.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\DebugMessenger.cpp" />
@@ -119,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Rendering\ShaderCompiler\Shader.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\Buffer.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\CommandBuffer.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\CommandPool.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\DebugMessenger.h" />

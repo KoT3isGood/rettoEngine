@@ -4,7 +4,7 @@
 
 AppInfo appInfo{
 	"rttGame",  // App Name
-	"1.0.0",    // App Version
+	"1.0.0.0",    // App Version
 	"testGame", // App Description
 	10			// Build ID
 };
