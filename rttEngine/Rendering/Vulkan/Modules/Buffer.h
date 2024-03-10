@@ -12,6 +12,8 @@ namespace rttvk {
 		void SetData(void* var, size_t size);
 		void* GetMapped();
 		uint32_t GetBufferSize();
+
+		VkDeviceAddress GetBufferAddress();
 	private:
 		LogicalDevice* device;
 		VkDeviceMemory memory;
@@ -22,6 +24,8 @@ namespace rttvk {
 		VkBufferUsageFlags usage;
 
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+		PFN_vkGetBufferDeviceAddressKHR vkGetBufferDeviceAddressKHR;
 	};
 
 }

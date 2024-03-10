@@ -73,14 +73,145 @@ VulkanLayer::VulkanLayer()
 	allocateInfo.pSetLayouts = &layout;
 
 	VK_CREATE_VALIDATION(vkAllocateDescriptorSets(logicalDevice.GetDevice(), &allocateInfo, &descSet), VkDescriptorSet);
-	buffer.Create();
+	//buffer.Create();
+
+
+
+
+
+
+
+
+
+
+	RTT_LOG("-------- RAY TRACING --------");
+
+
+
+	
+	rayGenShader = rttvk::Shader("Content/EngineLoad/Shaders/test1.rgen",&logicalDevice,VK_SHADER_STAGE_RAYGEN_BIT_KHR);
+	rayGenShader.Create();
+
+	rtPipeline.Create();
+
+
+
+
+	vkCmdTraceRaysKHR = (PFN_vkCmdTraceRaysKHR)vkGetDeviceProcAddr(logicalDevice.GetDevice(), "vkCmdTraceRaysKHR");
+
+
+	VkDescriptorPoolSize poolSizeRT = {};
+	poolSizeRT.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	poolSizeRT.descriptorCount = 1;
+
+
+
+	VkDescriptorPoolCreateInfo poolCreateInfoRT = {};
+	poolCreateInfoRT.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolCreateInfoRT.poolSizeCount = 1;
+	poolCreateInfoRT.pPoolSizes = &poolSizeRT;
+	poolCreateInfoRT.maxSets = 1;
+
+	VK_CREATE_VALIDATION(vkCreateDescriptorPool(logicalDevice.GetDevice(), &poolCreateInfoRT, nullptr, &descPoolRT), VkDescriptorPool);
+
+	VkDescriptorSetAllocateInfo allocateInfoRT = {};
+	allocateInfoRT.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocateInfoRT.descriptorPool = descPoolRT;
+	allocateInfoRT.descriptorSetCount = 1;
+	VkDescriptorSetLayout layoutRT = rtPipeline.GetDescriptorLayout();
+	allocateInfoRT.pSetLayouts = &layoutRT;
+
+	VK_CREATE_VALIDATION(vkAllocateDescriptorSets(logicalDevice.GetDevice(), &allocateInfoRT, &descSetRT), VkDescriptorSet);
+
+
+
+
+	//rayGenBuffer.Create();
+
+
+
+
+
+
+
+
+
+	VkPhysicalDeviceProperties physicalDeviceProperties;
+	vkGetPhysicalDeviceProperties(chosenPhysicalDevice,
+		&physicalDeviceProperties);
+
+	rtProperties = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR};
+
+	VkPhysicalDeviceProperties2 physicalDeviceProperties2 {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+		&rtProperties,
+		physicalDeviceProperties
+		};
+
+	vkGetPhysicalDeviceProperties2(chosenPhysicalDevice,
+		&physicalDeviceProperties2);
+
+	
+	//uint32_t align = (physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize + physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
+
+	uint32_t handleSizeAligned = align(rtProperties.shaderGroupHandleSize, rtProperties.shaderGroupHandleAlignment);
+	RTT_LOG("rgenShaderBindingTable.size = " + std::to_string(rgenShaderBindingTable.size));
+	rgenShaderBindingTable.size = align(handleSizeAligned, rtProperties.shaderGroupBaseAlignment);
+	rgenShaderBindingTable.stride = rgenShaderBindingTable.size;
+
+	VkDeviceSize sbtSize = rgenShaderBindingTable.size;
+	RTT_LOG("sbtSize = " + std::to_string(rgenShaderBindingTable.size));
+	
+	rayGenBuffer.Create();
+	
+
+	uint32_t             dataSize = 1 * rtProperties.shaderGroupHandleSize;
+	std::vector<uint8_t> handles(dataSize);
+	PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR)vkGetDeviceProcAddr(logicalDevice.GetDevice(), "vkGetRayTracingShaderGroupHandlesKHR");
+	VK_VALIDATE(vkGetRayTracingShaderGroupHandlesKHR(logicalDevice.GetDevice(), rtPipeline.GetPipeline(), 0, 1, dataSize, rayGenBuffer.GetMapped()), vkGetRayTracingShaderGroupHandlesKHR);
+
+
+	VkBufferDeviceAddressInfo bdai{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
+	bdai.buffer = rayGenBuffer.GetBuffer();
+	VkDeviceAddress address = vkGetBufferDeviceAddress(logicalDevice.GetDevice(), &bdai);
+
+	rgenShaderBindingTable.deviceAddress = rayGenBuffer.GetBufferAddress();
+
+
+
+
+
+
+
+
+
+
+
+
 
 	
 }
 
 VulkanLayer::~VulkanLayer()
 {
+
+
+
+
 	vkDeviceWaitIdle(logicalDevice.GetDevice());
+
+	renderingImageView.Destroy();
+
+	//rayGenBuffer.Destroy();
+	rayGenShader.Destroy();
+	rtPipeline.Destroy();
+
+
+
+
+
+
+
 
 	buffer.Destroy();
 
@@ -104,84 +235,94 @@ VulkanLayer::~VulkanLayer()
 	instance.Destroy();
 }
 
+void VulkanLayer::ChangeImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout)
+{
+	VkImageSubresourceRange access;
+	access.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	access.baseMipLevel = 0;
+	access.levelCount = 1;
+	access.baseArrayLayer = 0;
+	access.layerCount = 1;
+
+	VkImageMemoryBarrier barrier;
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = oldLayout;
+	barrier.newLayout = newLayout;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.srcAccessMask = VK_ACCESS_NONE_KHR;
+	barrier.dstAccessMask = VK_ACCESS_NONE_KHR;
+	barrier.image = image;
+	barrier.subresourceRange = access;
+	barrier.pNext = nullptr;
+
+
+	vkCmdPipelineBarrier(commandBuffer.GetBuffer(), VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+}
+
 void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
-	memcpy(buffer.GetMapped(), resolutionBuf, sizeof(resolutionBuf));
-
-	VkPipelineStageFlags sourceStage = 0, destinationStage = 0;
 
 	VkDescriptorImageInfo imageInfo = {};
 	imageInfo.imageView = imageViews[imageIndex].GetImageView();
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-	VkWriteDescriptorSet writeDescriptorSet = {};
-	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSet.dstSet = descSet;
-	writeDescriptorSet.dstBinding = 0;
-	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	writeDescriptorSet.descriptorCount = 1;
+	VkWriteDescriptorSet wds = {};
+	wds.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wds.dstSet = descSetRT;
+	wds.dstBinding = 0;
+	wds.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	wds.descriptorCount = 1;
 
-	writeDescriptorSet.pImageInfo = &imageInfo;
+	wds.pImageInfo = &imageInfo;
 
-	
-	VkDescriptorBufferInfo dbi;
-	dbi.buffer = buffer.GetBuffer();
-	dbi.offset = 0;
-	dbi.range = 8;
 
-	VkWriteDescriptorSet writeDescriptorSet2 = {};
-	writeDescriptorSet2.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSet2.dstSet = descSet;
-	writeDescriptorSet2.dstBinding = 1;
-	writeDescriptorSet2.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	writeDescriptorSet2.descriptorCount = 1;
-	writeDescriptorSet2.pBufferInfo = &dbi;
-	std::vector<VkWriteDescriptorSet> writedescsets;
-	writedescsets.push_back(writeDescriptorSet);
-	writedescsets.push_back(writeDescriptorSet2);
-
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), writedescsets.size(), writedescsets.data(), 0, nullptr);
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 1, &wds, 0, nullptr);
 
 
 
-	
+
 
 
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	RTT_LOG("\t\tCommand Buffer");
 	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
+
+	ChangeImageLayout(images[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rtPipeline.GetPipeline());
+	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rtPipeline.GetPipelineLayout(), 0, 1, &descSetRT, 0, nullptr);
+
+
+	VkStridedDeviceAddressRegionKHR sbt_null{};
 	
-	//vkCmdUpdateBuffer(commandBuffer.GetBuffer(), resbuffer,0,8, resolutionBuf);
-	//vkCmdPipelineBarrier(commandBuffer.GetBuffer(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
-	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipeline());
-	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipelineLayout(), 0, 1, &descSet, 0, nullptr);
-	vkCmdDispatch(commandBuffer.GetBuffer(), 1280*0.125, 720 * 0.125, 1);
-	//vkCmdPipelineBarrier(commandBuffer.GetBuffer(), sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	vkCmdTraceRaysKHR(commandBuffer.GetBuffer(), &rgenShaderBindingTable, &sbt_null, &sbt_null, &sbt_null, 1280, 720, 1);
+
+	ChangeImageLayout(images[imageIndex], VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+	RTT_LOG("\t\tCommand Buffer END");
 	vkEndCommandBuffer(commandBuffer.GetBuffer());
 }
 void VulkanLayer::Draw()
-{
+{ 
 	
-	RTT_LOG("---------------------------------------------------\n new frame\n---------------------------------------------------");
+	RTT_LOG("\t\tNew Frame");
 	vkWaitForFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP(), VK_TRUE, UINT64_MAX);
 	vkResetFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP());
-	//RTT_LOG("1");
 	uint32_t imageIndex = 0;
 	vkAcquireNextImageKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), UINT64_MAX, imageAvailable.GetSemaphore(), inFlightFence.GetFence(), &imageIndex);
-	//RTT_LOG("CurrentImage: "+ std::to_string(imageIndex));
+	RTT_LOG("\t\t\tCurrentImage: "+ std::to_string(imageIndex));
 
 	vkResetCommandBuffer(commandBuffer.GetBuffer(), 0);
-
-	//RTT_LOG("2");
 	RecordCommandBuffer(imageIndex);
-	//RTT_LOG("3");
 	VkCommandBuffer cb = commandBuffer.GetBuffer();
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	VkSemaphore waitSemaphores[] = { imageAvailable.GetSemaphore() };
-	VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR;
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
 	submitInfo.pWaitDstStageMask = &waitStages;
@@ -191,8 +332,9 @@ void VulkanLayer::Draw()
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	//vkWaitForFences(logicalDevice.GetDevice(), 1, &fence, VK_FALSE, UINT64_MAX);
 	VK_VALIDATE(vkQueueSubmit(logicalDevice.GetGraphicsQueue(), 1, &submitInfo, inFlightFence.GetFence()), vkQueueSubmit);
+
+	//VK_VALIDATE(vkWaitForFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP(), VK_TRUE, UINT64_MAX), vkWaitForFences);
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -202,6 +344,30 @@ void VulkanLayer::Draw()
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapchains;
 	presentInfo.pImageIndices = &imageIndex;
-	vkQueuePresentKHR(logicalDevice.GetPresentQueue(), &presentInfo);
+	VkResult result = vkQueuePresentKHR(logicalDevice.GetPresentQueue(), &presentInfo);
+	if (result == VK_SUCCESS) {
+		RTT_LOG("VK_SUCCESS");
+	}
+	else if (result == VK_SUBOPTIMAL_KHR) {
+		RTT_LOG("VK_SUBOPTIMAL_KHR");
+	}
+	else if (result == VK_ERROR_OUT_OF_HOST_MEMORY) {
+		RTT_LOG("VK_ERROR_OUT_OF_HOST_MEMORY");
+	}
+	else if (result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+		RTT_LOG("VK_ERROR_OUT_OF_DEVICE_MEMORY");
+	}
+	else if (result == VK_ERROR_DEVICE_LOST) {
+		RTT_LOG("VK_ERROR_DEVICE_LOST");
+	}
+	else if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		RTT_LOG("VK_ERROR_OUT_OF_DATE_KHR");
+	}
+	else if (result == VK_ERROR_SURFACE_LOST_KHR) {
+		RTT_LOG("VK_ERROR_SURFACE_LOST_KHR");
+	}
+	else if (result == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT) {
+		RTT_LOG("VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT");
+	}
 }
 

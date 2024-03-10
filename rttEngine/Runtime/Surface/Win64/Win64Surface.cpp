@@ -25,7 +25,7 @@ Win64Surface::Win64Surface(const char* windowName)
 	MultiByteToWideChar(CP_ACP, 0, windowName, -1, (LPWSTR)windowNameWide, nChars);
 
 	// Create window properties
-	DWORD windowProperties = WS_SYSMENU;
+	DWORD windowProperties = WS_OVERLAPPEDWINDOW;
 	
 	// Set Resolution
 	AdjustWindowRect(&winSize, windowProperties, false);
@@ -93,8 +93,8 @@ void Win64Surface::StartUpdateLoop()
 			SetWindowTextA(Handle, tmp.c_str());
 		}
 
-		resolutionX = winSize.right - winSize.left;
-		resolutionY = winSize.bottom - winSize.top;
+		vkLayer->resolution[0] = resolutionX;
+		vkLayer->resolution[1] = resolutionY;
 		// Loop
 		if (PeekMessage(&msg, NULL, NULL, NULL, PM_REMOVE)) {
 			TranslateMessage(&msg);
@@ -107,14 +107,19 @@ void Win64Surface::StartUpdateLoop()
 }
 LRESULT Win64Surface::WindowEventHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	Win64Surface* window = (Win64Surface*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	switch (uMsg) {
 	case WM_DESTROY:
 	{
-		Win64Surface* window = (Win64Surface*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		
 		window->shouldRun = false;
 
 		break;
 	}
+	case WM_SIZE:
+		
+		window->resolutionX = LOWORD(lParam);
+		window->resolutionY = HIWORD(lParam);
 	default:
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 		break;

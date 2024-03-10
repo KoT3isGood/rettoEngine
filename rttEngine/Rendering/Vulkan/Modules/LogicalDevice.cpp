@@ -28,9 +28,14 @@ namespace rttvk {
 			};
 		}
 		// TODO: Test if extension is enabled and then create features
+		VkPhysicalDeviceBufferAddressFeaturesEXT bufferAddressFeatures{};
+		bufferAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_ADDRESS_FEATURES_EXT;
+		bufferAddressFeatures.bufferDeviceAddress = VK_TRUE;
+
 		VkPhysicalDeviceSynchronization2Features sync2Features{};
 		sync2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
 		sync2Features.synchronization2 = VK_TRUE;
+		sync2Features.pNext = &bufferAddressFeatures;
 
 		VkPhysicalDeviceAccelerationStructureFeaturesKHR accStructureFeatures{};
 		accStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;

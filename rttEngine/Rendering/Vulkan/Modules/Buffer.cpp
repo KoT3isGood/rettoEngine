@@ -11,13 +11,12 @@ namespace rttvk {
 	{
 		VkBufferCreateInfo bufferCreateInfo{};
 		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferCreateInfo.flags = 0;
 		bufferCreateInfo.size = size;
 		bufferCreateInfo.usage = usage;
 		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		bufferCreateInfo.queueFamilyIndexCount = 1;
-		uint32_t queue = device->GetGraphicsQueueIndex();
-		bufferCreateInfo.pQueueFamilyIndices = &queue;
+		//bufferCreateInfo.queueFamilyIndexCount = 1;
+		//uint32_t queue = device->GetGraphicsQueueIndex();
+		//bufferCreateInfo.pQueueFamilyIndices = &queue;
 
 		VK_CREATE_VALIDATION(vkCreateBuffer(device->GetDevice(), &bufferCreateInfo, nullptr, &buffer), VkBuffer);
 
@@ -26,14 +25,16 @@ namespace rttvk {
 		VkMemoryAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		VK_CREATE_VALIDATION(vkAllocateMemory(device->GetDevice(), &allocInfo, nullptr, &memory), VkMemory Allocation);
-		VK_CREATE_VALIDATION(vkMapMemory(device->GetDevice(), memory, 0, 8, 0, &mapped), VkMemory Mapping);
+		
 
-		vkBindBufferMemory(device->GetDevice(), buffer, memory, 0);
+		VK_CREATE_VALIDATION(vkMapMemory(device->GetDevice(), memory, 0, size, 0, &mapped), Mapping Memory);
+		VK_CREATE_VALIDATION(vkBindBufferMemory(device->GetDevice(), buffer, memory, 0), Bind Memory);
 	}
 	void Buffer::Destroy()
 	{
+
 		vkUnmapMemory(device->GetDevice(), memory);
 		vkFreeMemory(device->GetDevice(), memory, nullptr);
 		vkDestroyBuffer(device->GetDevice(), buffer, nullptr);
@@ -57,6 +58,13 @@ namespace rttvk {
 	uint32_t Buffer::GetBufferSize()
 	{
 		return size;
+	}
+
+	VkDeviceAddress Buffer::GetBufferAddress()
+	{
+		VkBufferDeviceAddressInfo bdai{ VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
+		bdai.buffer = buffer;
+		return vkGetBufferDeviceAddress(device->GetDevice(), &bdai);
 	}
 	
 

@@ -1,24 +1,16 @@
 #version 460
-layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout (binding = 0, rgba8) uniform image2D colorBuffer;
-layout (binding = 1) uniform res {
-    vec2 resolution;
-};
+// layout (binding = 1) uniform res {
+//     vec2 resolution;
+// };
 
 void main() {
     
     ivec2 screen_pos = ivec2(gl_GlobalInvocationID.x,gl_GlobalInvocationID.y);
 
-    vec2 texCoord = vec2(0.0, 0.0);
-    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
-	
-    texCoord.x = float(texelCoord.x-0.5)/(gl_NumWorkGroups.x*gl_WorkGroupSize.x);
-    texCoord.y = float(texelCoord.y-0.5)/(gl_NumWorkGroups.y*gl_WorkGroupSize.y);
-
-    vec2 uv = (texCoord-0.5)*resolution.xy/resolution.y;
-    vec3 origin = vec3(-5,0,0);
     
     
 
-    imageStore(colorBuffer,screen_pos, vec4(uv,0.0,1.0));
+    imageStore(colorBuffer,screen_pos, vec4(1.0,0.0,0.0,1.0));
 }
