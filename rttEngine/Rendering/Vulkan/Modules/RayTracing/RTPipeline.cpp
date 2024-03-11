@@ -40,6 +40,7 @@ namespace rttvk {
 		createInfo.stageCount = stages.size();
 		createInfo.pStages = stages.data();
 
+		std::vector<VkRayTracingShaderGroupCreateInfoKHR> groups{};
 		VkRayTracingShaderGroupCreateInfoKHR group{};
 		group.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
 
@@ -48,9 +49,24 @@ namespace rttvk {
 		group.closestHitShader = VK_SHADER_UNUSED_KHR;
 		group.generalShader = 0;
 		group.intersectionShader = VK_SHADER_UNUSED_KHR;
+		groups.push_back(group);
 
-		createInfo.groupCount = 1;
-		createInfo.pGroups = &group;
+		group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+		group.anyHitShader = VK_SHADER_UNUSED_KHR;
+		group.closestHitShader = VK_SHADER_UNUSED_KHR;
+		group.generalShader = 1;
+		group.intersectionShader = VK_SHADER_UNUSED_KHR;
+		groups.push_back(group);
+
+		group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+		group.anyHitShader = VK_SHADER_UNUSED_KHR;
+		group.closestHitShader = 2;
+		group.generalShader = VK_SHADER_UNUSED_KHR;
+		group.intersectionShader = VK_SHADER_UNUSED_KHR;
+		groups.push_back(group);
+
+		createInfo.groupCount = groups.size();
+		createInfo.pGroups = groups.data();
 		createInfo.maxPipelineRayRecursionDepth = 1;
 		createInfo.layout = layout;
 

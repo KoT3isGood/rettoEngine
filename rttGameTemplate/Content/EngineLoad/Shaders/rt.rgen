@@ -1,0 +1,33 @@
+#version 460
+#extension GL_EXT_ray_tracing: require
+layout (binding = 0, rgba8) uniform image2D colorBuffer;
+layout (binding = 1) uniform accelerationStructureEXT tlas;
+
+struct hitPayload
+{
+  vec3 hitValue;
+};
+layout(location = 0) rayPayloadEXT hitPayload prd;
+
+void main() {
+    vec3 origin = vec3(-5,0,0);
+    vec2 uv = (vec2(float(gl_LaunchIDEXT.x)/1280.,float(gl_LaunchIDEXT.y)/720.)-0.5)*2;
+    vec3 direction = normalize(vec3(1,uv));
+  uint  rayFlags = gl_RayFlagsOpaqueEXT;
+  float tMin     = 0.001;
+  float tMax     = 10000.0;
+    traceRayEXT(tlas, // acceleration structure
+          rayFlags,       // rayFlags
+          0xFF,           // cullMask
+          0,              // sbtRecordOffset
+          0,              // sbtRecordStride
+          0,              // missIndex
+          origin.xyz,     // ray origin
+          tMin,           // ray min range
+          direction.xyz,  // ray direction
+          tMax,           // ray max range
+          0               // payload (location = 0)
+  );
+
+    imageStore(colorBuffer, ivec2(gl_LaunchIDEXT.xy), vec4(prd.hitValue, 1.0));
+}
