@@ -159,9 +159,8 @@ private:
 
 	rttvk::RTPipeline rtPipeline = rttvk::RTPipeline(&logicalDevice, rayTracingShaders, rtSetLayout);
 
-	rttvk::Buffer blas1Buffer = rttvk::Buffer(&logicalDevice, 32, VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR);
-	rttvk::BLAS blas1 = rttvk::BLAS(&logicalDevice, &blas1Buffer);
-	rttvk::Buffer tlasBuffer = rttvk::Buffer(&logicalDevice, 32, VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR);
-	rttvk::TLAS tlas = rttvk::TLAS(&logicalDevice, &tlasBuffer, &blas1);
+	rttvk::BLAS blas1 = rttvk::BLAS(&logicalDevice);
+	
+	rttvk::TLAS tlas = rttvk::TLAS(&logicalDevice, &blas1);
 	bool hasBuild = false;
 };

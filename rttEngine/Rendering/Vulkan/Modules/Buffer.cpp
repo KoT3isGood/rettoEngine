@@ -31,6 +31,8 @@ namespace rttvk {
 
 		VK_CREATE_VALIDATION(vkMapMemory(device->GetDevice(), memory, 0, size, 0, &mapped), Mapping Memory);
 		VK_CREATE_VALIDATION(vkBindBufferMemory(device->GetDevice(), buffer, memory, 0), Bind Memory);
+
+		
 	}
 	void Buffer::Destroy()
 	{
@@ -46,7 +48,6 @@ namespace rttvk {
 	
 	void Buffer::SetData(void* var, size_t size)
 	{
-		//RTT_LOG(std::to_string((int)var));
 		memcpy(mapped, &var, size);
 	}
 

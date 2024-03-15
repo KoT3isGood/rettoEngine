@@ -200,10 +200,8 @@ VulkanLayer::VulkanLayer()
 
 
 	RTT_LOG("-------- BOTTOM LEVEL ACCELERATION STRUCTURES --------");
-	blas1Buffer.Create();
 	blas1.Create();
 	RTT_LOG("-------- TOP LEVEL ACCELERATION STRUCTURES --------");
-	tlasBuffer.Create();
 	tlas.Create();
 
 
@@ -319,14 +317,18 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsAC.pNext = &accS;
 
 	RTT_LOG("Command Buffer ----------------------------------------------------");
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 1, &wdsAC, 0, nullptr);
+
+	std::vector<VkWriteDescriptorSet> sets = { wds, wdsAC };
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), sets.size(), sets.data(), 0, nullptr);
 
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	//RTT_LOG("\t\tCommand Buffer");
 	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
+	RTT_LOG("BLAS ----------------------------------------------------");
 	blas1.Build(&commandBuffer);
+	RTT_LOG("TLAS ----------------------------------------------------");
 	tlas.Build(&commandBuffer);
 
 

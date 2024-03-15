@@ -7,24 +7,21 @@
 namespace rttvk {
 	class TLAS : public Module {
 	public:
-		TLAS(LogicalDevice* device, Buffer* buffer, BLAS* blas);
+		TLAS(LogicalDevice* device, BLAS* blas);
 		virtual void Create() override;
 		virtual void Destroy() override;
 		void Build(CommandBuffer* commandBuffer);
 		VkAccelerationStructureKHR GetAS();
 	private:
 		LogicalDevice* device;
-		Buffer* buffer;
-
-		VkAccelerationStructureKHR structure;
-
-		Buffer instancesBuffer;
+		BLAS* blas;
+		Buffer blasInstance;
+		Buffer tlasBuffer;
 		Buffer scratchBuffer;
 
-		VkAccelerationStructureBuildGeometryInfoKHR geometryInfo{};
-		VkAccelerationStructureBuildRangeInfoKHR buildRange{};
-		VkAccelerationStructureGeometryKHR geometry{};
-		VkAccelerationStructureGeometryDataKHR geometryData{};
-		BLAS* blas;
+		VkAccelerationStructureKHR tlas;
+		VkAccelerationStructureGeometryKHR geometryTLAS = {};
+		VkAccelerationStructureBuildGeometryInfoKHR buildInfoTLAS = {};
+		VkAccelerationStructureBuildRangeInfoKHR buildRangeInfo = {};
 	};
 }
