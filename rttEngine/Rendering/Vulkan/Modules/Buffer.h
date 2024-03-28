@@ -5,7 +5,6 @@
 namespace rttvk {
 	class Buffer: public Module {
 	public:
-		Buffer() = default;
 		Buffer(LogicalDevice* device, uint32_t size, VkBufferUsageFlags usage);
 		virtual void Create() override;
 		virtual void Destroy() override;

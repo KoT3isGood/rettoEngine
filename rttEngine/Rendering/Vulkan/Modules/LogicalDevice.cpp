@@ -1,6 +1,5 @@
 #include "LogicalDevice.h"
 
-
 namespace rttvk {
 	LogicalDevice::LogicalDevice(VkPhysicalDevice* physicalDevice, std::vector<const char*> extensions, std::vector<const char*> layers)
 	{

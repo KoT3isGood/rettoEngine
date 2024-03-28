@@ -35,8 +35,6 @@ class Win64Surface;
 #include "Modules\SyncGPU.h"
 #include "Modules\Buffer.h"
 #include "Modules\RayTracing\RTPipeline.h"
-#include "Modules\RayTracing\BLAS.h"
-#include "Modules\RayTracing\TLAS.h"
 #define VK_VALIDATE(result, vkStruct) if(result!=VK_SUCCESS) {RTT_LOG(std::string("[ VULKAN ] FAILED TO USE ")+#vkStruct);RTT_ASSERT(0);}
 
 class VulkanLayer : public RenderingLayer {
@@ -97,6 +95,10 @@ private:
 
 	rttvk::Buffer buffer = rttvk::Buffer(&logicalDevice,8,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
+	rttvk::Shader rayGenShader = rttvk::Shader();
+	std::vector<rttvk::Shader*> rayTracingShaders = {&rayGenShader };
+	VkDescriptorSetLayoutBinding setLayout1{0,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1};
+	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { setLayout1 };
 
 
 
@@ -132,13 +134,6 @@ private:
 	void RecordCommandBuffer(uint32_t imageIndex);
 	void ChangeImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
 private:
-	rttvk::Shader rayGenShader = rttvk::Shader();
-	rttvk::Shader missShader = rttvk::Shader();
-	rttvk::Shader closestHitShader = rttvk::Shader();
-	std::vector<rttvk::Shader*> rayTracingShaders = { &rayGenShader, &missShader, &closestHitShader };
-	VkDescriptorSetLayoutBinding setLayout1{ 0,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1 };
-	VkDescriptorSetLayoutBinding setLayout2{ 1,VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR,1 };
-	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { setLayout1, setLayout2 };
 
 	PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR;
 
@@ -147,21 +142,13 @@ private:
 
 	VkPhysicalDeviceRayTracingPipelinePropertiesKHR rtProperties = {};
 
-	rttvk::Buffer rayGenBuffer = rttvk::Buffer(&logicalDevice, 64*3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR);
+	rttvk::Buffer rayGenBuffer = rttvk::Buffer(&logicalDevice, 64, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR);
 
 	VkStridedDeviceAddressRegionKHR rgenShaderBindingTable = {};
-	VkStridedDeviceAddressRegionKHR missShaderBindingTable = {};
-	VkStridedDeviceAddressRegionKHR chitShaderBindingTable = {};
 
 	uint32_t align(uint32_t a, uint32_t x) {
 		return uint32_t((a + (uint32_t(x) - 1)) & ~uint32_t(x - 1));
 	}
 
 	rttvk::RTPipeline rtPipeline = rttvk::RTPipeline(&logicalDevice, rayTracingShaders, rtSetLayout);
-
-	rttvk::Buffer blas1Buffer = rttvk::Buffer(&logicalDevice, 32, VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR);
-	rttvk::BLAS blas1 = rttvk::BLAS(&logicalDevice, &blas1Buffer);
-	rttvk::Buffer tlasBuffer = rttvk::Buffer(&logicalDevice, 32, VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR);
-	rttvk::TLAS tlas = rttvk::TLAS(&logicalDevice, &tlasBuffer, &blas1);
-	bool hasBuild = false;
 };

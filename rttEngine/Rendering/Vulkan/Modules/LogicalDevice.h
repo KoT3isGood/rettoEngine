@@ -2,7 +2,6 @@
 #include "Module.h"
 #include <vector>
 
-#define DEVICE_FUNCTION(device, func) PFN_##func func = (PFN_##func)vkGetDeviceProcAddr(device->GetDevice(),#func)
 namespace rttvk {
 	class LogicalDevice : public Module {
 	public:

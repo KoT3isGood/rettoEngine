@@ -89,15 +89,8 @@ VulkanLayer::VulkanLayer()
 
 
 	
-	rayGenShader = rttvk::Shader("Content/EngineLoad/Shaders/rt.rgen",&logicalDevice,VK_SHADER_STAGE_RAYGEN_BIT_KHR);
+	rayGenShader = rttvk::Shader("Content/EngineLoad/Shaders/test1.rgen",&logicalDevice,VK_SHADER_STAGE_RAYGEN_BIT_KHR);
 	rayGenShader.Create();
-
-	missShader = rttvk::Shader("Content/EngineLoad/Shaders/rt.rmiss", &logicalDevice, VK_SHADER_STAGE_MISS_BIT_KHR);
-	missShader.Create();
-
-	closestHitShader = rttvk::Shader("Content/EngineLoad/Shaders/rt.rchit", &logicalDevice, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
-	closestHitShader.Create();
-
 
 	rtPipeline.Create();
 
@@ -111,15 +104,12 @@ VulkanLayer::VulkanLayer()
 	poolSizeRT.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	poolSizeRT.descriptorCount = 1;
 
-	VkDescriptorPoolSize poolSizeACRT = {};
-	poolSizeACRT.type = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
-	poolSizeACRT.descriptorCount = 1;
-	std::vector<VkDescriptorPoolSize> pools = { poolSizeRT,poolSizeACRT };
+
 
 	VkDescriptorPoolCreateInfo poolCreateInfoRT = {};
 	poolCreateInfoRT.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolCreateInfoRT.poolSizeCount = pools.size();
-	poolCreateInfoRT.pPoolSizes = pools.data();
+	poolCreateInfoRT.poolSizeCount = 1;
+	poolCreateInfoRT.pPoolSizes = &poolSizeRT;
 	poolCreateInfoRT.maxSets = 1;
 
 	VK_CREATE_VALIDATION(vkCreateDescriptorPool(logicalDevice.GetDevice(), &poolCreateInfoRT, nullptr, &descPoolRT), VkDescriptorPool);
@@ -165,26 +155,12 @@ VulkanLayer::VulkanLayer()
 	//uint32_t align = (physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize + physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
 
 	uint32_t handleSizeAligned = align(rtProperties.shaderGroupHandleSize, rtProperties.shaderGroupHandleAlignment);
-
-
-
-
-
-
-
-
-
-
+	RTT_LOG("rgenShaderBindingTable.size = " + std::to_string(rgenShaderBindingTable.size));
 	rgenShaderBindingTable.size = align(handleSizeAligned, rtProperties.shaderGroupBaseAlignment);
 	rgenShaderBindingTable.stride = rgenShaderBindingTable.size;
 
-	missShaderBindingTable.size = align(1*handleSizeAligned, rtProperties.shaderGroupBaseAlignment);
-	missShaderBindingTable.stride = handleSizeAligned;
-
-	chitShaderBindingTable.size = align(1 * handleSizeAligned, rtProperties.shaderGroupBaseAlignment);
-	chitShaderBindingTable.stride = handleSizeAligned;
-
 	VkDeviceSize sbtSize = rgenShaderBindingTable.size;
+	RTT_LOG("sbtSize = " + std::to_string(rgenShaderBindingTable.size));
 	
 	rayGenBuffer.Create();
 	
@@ -194,17 +170,18 @@ VulkanLayer::VulkanLayer()
 	PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR)vkGetDeviceProcAddr(logicalDevice.GetDevice(), "vkGetRayTracingShaderGroupHandlesKHR");
 	VK_VALIDATE(vkGetRayTracingShaderGroupHandlesKHR(logicalDevice.GetDevice(), rtPipeline.GetPipeline(), 0, 1, dataSize, rayGenBuffer.GetMapped()), vkGetRayTracingShaderGroupHandlesKHR);
 
+
+	VkBufferDeviceAddressInfo bdai{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
+	bdai.buffer = rayGenBuffer.GetBuffer();
+	VkDeviceAddress address = vkGetBufferDeviceAddress(logicalDevice.GetDevice(), &bdai);
+
 	rgenShaderBindingTable.deviceAddress = rayGenBuffer.GetBufferAddress();
-	missShaderBindingTable.deviceAddress = rayGenBuffer.GetBufferAddress() + rgenShaderBindingTable.size;
-	chitShaderBindingTable.deviceAddress = rayGenBuffer.GetBufferAddress() + rgenShaderBindingTable.size + missShaderBindingTable.size;
 
 
-	RTT_LOG("-------- BOTTOM LEVEL ACCELERATION STRUCTURES --------");
-	blas1Buffer.Create();
-	blas1.Create();
-	RTT_LOG("-------- TOP LEVEL ACCELERATION STRUCTURES --------");
-	tlasBuffer.Create();
-	tlas.Create();
+
+
+
+
 
 
 
@@ -218,12 +195,14 @@ VulkanLayer::VulkanLayer()
 VulkanLayer::~VulkanLayer()
 {
 
-	RTT_LOG("Shutting down");
+
 
 
 	vkDeviceWaitIdle(logicalDevice.GetDevice());
 
-	rayGenBuffer.Destroy();
+	renderingImageView.Destroy();
+
+	//rayGenBuffer.Destroy();
 	rayGenShader.Destroy();
 	rtPipeline.Destroy();
 
@@ -234,6 +213,7 @@ VulkanLayer::~VulkanLayer()
 
 
 
+	buffer.Destroy();
 
 	//vkUnmapMemory(logicalDevice.GetDevice(), memory);
 	//vkDestroyBuffer(logicalDevice.GetDevice(), resbuffer, nullptr);
@@ -284,7 +264,6 @@ void VulkanLayer::ChangeImageLayout(VkImage image, VkImageLayout oldLayout, VkIm
 void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
 
-	RTT_LOG("Descriptors ----------------------------------------------------");
 	VkDescriptorImageInfo imageInfo = {};
 	imageInfo.imageView = imageViews[imageIndex].GetImageView();
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -301,34 +280,16 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 
 	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 1, &wds, 0, nullptr);
 
-	VkWriteDescriptorSet wdsAC = {};
-	wdsAC.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	wdsAC.dstSet = descSetRT;
-	wdsAC.dstBinding = 1;
-	wdsAC.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
-	wdsAC.descriptorCount = 1;
 
 
-	VkAccelerationStructureKHR ass[] = { tlas.GetAS() };
 
-	VkWriteDescriptorSetAccelerationStructureKHR accS{};
-	accS.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
-	accS.accelerationStructureCount = 1;
-	accS.pAccelerationStructures = ass;
 
-	wdsAC.pNext = &accS;
-
-	RTT_LOG("Command Buffer ----------------------------------------------------");
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 1, &wdsAC, 0, nullptr);
 
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	//RTT_LOG("\t\tCommand Buffer");
+	RTT_LOG("\t\tCommand Buffer");
 	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
-	blas1.Build(&commandBuffer);
-	tlas.Build(&commandBuffer);
-
 
 	ChangeImageLayout(images[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rtPipeline.GetPipeline());
@@ -337,28 +298,27 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 
 	VkStridedDeviceAddressRegionKHR sbt_null{};
 	
-	vkCmdTraceRaysKHR(commandBuffer.GetBuffer(), &rgenShaderBindingTable, &missShaderBindingTable, &chitShaderBindingTable, &sbt_null, 1280, 720, 1);
+	vkCmdTraceRaysKHR(commandBuffer.GetBuffer(), &rgenShaderBindingTable, &sbt_null, &sbt_null, &sbt_null, 1280, 720, 1);
 
 	ChangeImageLayout(images[imageIndex], VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-	//RTT_LOG("\t\tCommand Buffer END");
+	RTT_LOG("\t\tCommand Buffer END");
 	vkEndCommandBuffer(commandBuffer.GetBuffer());
 }
 void VulkanLayer::Draw()
 { 
 	
-	//RTT_LOG("\t\tNew Frame");
+	RTT_LOG("\t\tNew Frame");
 	vkWaitForFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP(), VK_TRUE, UINT64_MAX);
 	vkResetFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP());
 	uint32_t imageIndex = 0;
 	vkAcquireNextImageKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), UINT64_MAX, imageAvailable.GetSemaphore(), inFlightFence.GetFence(), &imageIndex);
-	//RTT_LOG("\t\t\tCurrentImage: "+ std::to_string(imageIndex));
+	RTT_LOG("\t\t\tCurrentImage: "+ std::to_string(imageIndex));
 
 	vkResetCommandBuffer(commandBuffer.GetBuffer(), 0);
 	RecordCommandBuffer(imageIndex);
 	VkCommandBuffer cb = commandBuffer.GetBuffer();
 
-	RTT_LOG("Submit ----------------------------------------------------");
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	VkSemaphore waitSemaphores[] = { imageAvailable.GetSemaphore() };
@@ -385,5 +345,29 @@ void VulkanLayer::Draw()
 	presentInfo.pSwapchains = swapchains;
 	presentInfo.pImageIndices = &imageIndex;
 	VkResult result = vkQueuePresentKHR(logicalDevice.GetPresentQueue(), &presentInfo);
+	if (result == VK_SUCCESS) {
+		RTT_LOG("VK_SUCCESS");
+	}
+	else if (result == VK_SUBOPTIMAL_KHR) {
+		RTT_LOG("VK_SUBOPTIMAL_KHR");
+	}
+	else if (result == VK_ERROR_OUT_OF_HOST_MEMORY) {
+		RTT_LOG("VK_ERROR_OUT_OF_HOST_MEMORY");
+	}
+	else if (result == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+		RTT_LOG("VK_ERROR_OUT_OF_DEVICE_MEMORY");
+	}
+	else if (result == VK_ERROR_DEVICE_LOST) {
+		RTT_LOG("VK_ERROR_DEVICE_LOST");
+	}
+	else if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		RTT_LOG("VK_ERROR_OUT_OF_DATE_KHR");
+	}
+	else if (result == VK_ERROR_SURFACE_LOST_KHR) {
+		RTT_LOG("VK_ERROR_SURFACE_LOST_KHR");
+	}
+	else if (result == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT) {
+		RTT_LOG("VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT");
+	}
 }
 
