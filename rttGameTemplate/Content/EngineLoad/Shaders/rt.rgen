@@ -1,7 +1,7 @@
 #version 460
 #extension GL_EXT_ray_tracing: require
-layout (set = 0,binding = 0, rgba8) uniform image2D colorBuffer;
-layout (set = 0,binding = 1) uniform accelerationStructureEXT tlas;
+layout (binding = 0, rgba8) uniform image2D colorBuffer;
+layout (binding = 1) uniform accelerationStructureEXT tlas;
 
 struct hitPayload
 {
@@ -10,12 +10,24 @@ struct hitPayload
 layout(location = 0) rayPayloadEXT hitPayload prd;
 
 void main() {
-vec4 color = vec4(0.0); // Initialize color
-    const vec3 origin = vec3(gl_LaunchIDEXT.x/1280, gl_LaunchIDEXT.y/720, 1.0); // Camera origin at launch ID
-    const vec3 direction = vec3(0.0, 0.0, -1.0); // Forward direction
-
-
-    traceRayEXT(tlas, gl_RayFlagsNoneEXT, 0xFF, 0, 0, 0, origin, 0.0, direction, 100000.0, 0);
+    vec3 origin = vec3(-5,0,0);
+    vec2 uv = (vec2(float(gl_LaunchIDEXT.x)/1280.,float(gl_LaunchIDEXT.y)/720.)-0.5)*2;
+    vec3 direction = normalize(vec3(1,uv));
+  uint  rayFlags = gl_RayFlagsOpaqueEXT;
+  float tMin     = 0.001;
+  float tMax     = 10000.0;
+    traceRayEXT(tlas, // acceleration structure
+          rayFlags,       // rayFlags
+          0xFF,           // cullMask
+          0,              // sbtRecordOffset
+          0,              // sbtRecordStride
+          0,              // missIndex
+          origin.xyz,     // ray origin
+          tMin,           // ray min range
+          direction.xyz,  // ray direction
+          tMax,           // ray max range
+          0               // payload (location = 0)
+  );
 
     imageStore(colorBuffer, ivec2(gl_LaunchIDEXT.xy), vec4(prd.hitValue, 1.0));
 }

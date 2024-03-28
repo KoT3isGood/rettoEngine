@@ -6,23 +6,25 @@
 namespace rttvk {
 	class BLAS : public Module {
 	public:
-		BLAS(LogicalDevice* device);
+		BLAS(LogicalDevice* device, Buffer* buffer);
 		virtual void Create() override;
 		virtual void Destroy() override;
 		void Build(CommandBuffer* commandBuffer);
 		uint64_t GetAddress();
 	private:
 		LogicalDevice* device;
+		Buffer* buffer;
 
-		Buffer vertexBuffer;
-		Buffer indexBuffer;
+		VkAccelerationStructureKHR structure;
 
-		Buffer blasBuffer;
+		Buffer vertices;
+		Buffer indicies;
+		Buffer transform;
 		Buffer scratchBuffer;
 
-		VkAccelerationStructureKHR blas;
-		VkAccelerationStructureGeometryKHR geometryBLAS = {};
-		VkAccelerationStructureBuildGeometryInfoKHR buildInfoBLAS = {};
-		VkAccelerationStructureBuildRangeInfoKHR buildRangeInfo = {};
+		VkAccelerationStructureBuildGeometryInfoKHR geometryInfo{};
+		VkAccelerationStructureBuildRangeInfoKHR buildRange{};
+		VkAccelerationStructureGeometryKHR geometry{};
+		VkAccelerationStructureGeometryDataKHR geometryData{};
 	};
 }
