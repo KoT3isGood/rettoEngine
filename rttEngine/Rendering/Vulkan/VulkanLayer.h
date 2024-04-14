@@ -166,4 +166,5 @@ private:
 
 	rttvk::BLAS blas = rttvk::BLAS(&logicalDevice);
 	rttvk::TLAS tlas = rttvk::TLAS(&logicalDevice, &blas);
+
 };

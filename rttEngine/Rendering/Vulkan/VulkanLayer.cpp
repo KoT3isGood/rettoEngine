@@ -79,7 +79,7 @@ VulkanLayer::VulkanLayer()
 
 
 
-	resolutionBuffer = rttvk::Buffer(&logicalDevice, sizeof(resolution), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+	resolutionBuffer = rttvk::Buffer(&logicalDevice, sizeof(resolution), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 	resolutionBuffer.Create();
 	
 
@@ -236,6 +236,7 @@ VulkanLayer::~VulkanLayer()
 
 
 
+	resolutionBuffer.Destroy();
 
 	//buffer.Destroy();
 
@@ -288,7 +289,7 @@ void VulkanLayer::ChangeImageLayout(VkImage image, VkImageLayout oldLayout, VkIm
 void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
 	
-	resolutionBuffer.SetData(resolution, sizeof(resolution));
+	memcpy(resolutionBuffer.GetMapped(),resolution, sizeof(resolution));
 	RTT_LOG("Resolution: " + std::to_string(resolution[0]) + ", " + std::to_string(resolution[1]));
 
 	VkDescriptorImageInfo imageInfo = {};

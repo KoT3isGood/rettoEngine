@@ -18,7 +18,7 @@ void main() {
     coords.r = float(gl_LaunchIDEXT.x) / float(gl_LaunchSizeEXT.x);
     coords.g = float(gl_LaunchIDEXT.y) / float(gl_LaunchSizeEXT.y);
     
-    vec2 texCoords = (coords-0.5);
+    vec2 texCoords = (coords-0.5)/resolution.resData.yx*resolution.resData.y;
 
     vec3 origin = vec3(-5,0,0);
 
