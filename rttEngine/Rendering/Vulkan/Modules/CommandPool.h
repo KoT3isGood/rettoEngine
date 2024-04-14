@@ -4,6 +4,7 @@
 namespace rttvk {
 	class CommandPool : public Module {
 	public:
+		CommandPool() = default;
 		CommandPool(LogicalDevice* device);
 		virtual void Create() override;
 		virtual void Destroy() override;

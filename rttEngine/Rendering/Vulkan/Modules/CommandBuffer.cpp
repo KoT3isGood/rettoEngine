@@ -12,7 +12,7 @@ namespace rttvk {
         allocInfo.commandPool = pool->GetPool();
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = 1;
-        VK_CREATE_VALIDATION(vkAllocateCommandBuffers(device->GetDevice(), &allocInfo, &buffer), VkCommandBuffer);
+        VK_CREATE_VALIDATION(vkAllocateCommandBuffers(device->GetDevice(), &allocInfo, &buffer));
     }
     VkCommandBuffer CommandBuffer::GetBuffer()
     {

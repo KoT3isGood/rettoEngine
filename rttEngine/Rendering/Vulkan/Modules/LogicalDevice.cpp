@@ -64,7 +64,7 @@ namespace rttvk {
 		createInfo.pQueueCreateInfos = &queueCreateInfo;
 		createInfo.pNext = &rtPipelineFeatures;
 
-		VK_CREATE_VALIDATION(vkCreateDevice(*physicalDevice, &createInfo, nullptr, &device), VkDevice);
+		VK_CREATE_VALIDATION(vkCreateDevice(*physicalDevice, &createInfo, nullptr, &device));
 		vkGetDeviceQueue(device, graphicsFamily, 0, &graphicsQueue);
 		vkGetDeviceQueue(device, presentFamily, 0, &presentQueue);
 	}

@@ -22,7 +22,7 @@ namespace rttvk {
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		VK_CREATE_VALIDATION(vkCreateImageView(device->GetDevice(),&createInfo,nullptr,&imageView), VkImageView);
+		VK_CREATE_VALIDATION(vkCreateImageView(device->GetDevice(),&createInfo,nullptr,&imageView));
 	}
 	void ImageView::Destroy()
 	{

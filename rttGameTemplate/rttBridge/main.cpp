@@ -1,4 +1,4 @@
-
+               
 #define RTT_CURRENT_APP "rttGame"
 #include "Runtime\Application\AppGeneration.h"
 

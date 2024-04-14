@@ -58,7 +58,7 @@ namespace rttvk {
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(assembly.data());
 
 
-		VK_CREATE_VALIDATION(vkCreateShaderModule(device->GetDevice(), &createInfo, nullptr, &shaderModule), VkShaderModule);
+		VK_CREATE_VALIDATION(vkCreateShaderModule(device->GetDevice(), &createInfo, nullptr, &shaderModule));
 
 
 		shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

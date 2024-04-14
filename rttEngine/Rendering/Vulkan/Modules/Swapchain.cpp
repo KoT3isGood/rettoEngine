@@ -24,7 +24,7 @@ namespace rttvk {
 
 		createInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 		createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-		VK_CREATE_VALIDATION(vkCreateSwapchainKHR(device->GetDevice(), &createInfo, nullptr, &swapchain), VkSwapchainKHR);
+		VK_CREATE_VALIDATION(vkCreateSwapchainKHR(device->GetDevice(), &createInfo, nullptr, &swapchain));
 		
 
 	}

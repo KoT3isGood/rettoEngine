@@ -23,7 +23,9 @@ getProcessInfo()->argc = argc; \
 getProcessInfo()->argv = argv; \
 getProcessInfo()->appInfo = &appInfo; \
 Win64Surface surface = Win64Surface(appInfo.name); \
-surface.StartUpdateLoop(); return 0; \
+surface.StartUpdateLoop(); \
+RTT_LOG("GAME WAS CLOSED SUCCESSFULLY, HAVE FUN IN DEVELOPMENT!"); \
+return 0; \
 }; 
 #endif
 #endif

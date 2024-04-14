@@ -5,6 +5,7 @@
 namespace rttvk {
 	class CommandBuffer:public Module {
 	public:
+		CommandBuffer() = default;
 		CommandBuffer(LogicalDevice* device, CommandPool* pool);
 		virtual void Create() override;
 		VkCommandBuffer GetBuffer();

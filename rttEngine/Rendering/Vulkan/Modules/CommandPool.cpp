@@ -11,7 +11,7 @@ namespace rttvk {
 		createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		createInfo.queueFamilyIndex = device->GetGraphicsQueueIndex();
 
-		VK_CREATE_VALIDATION(vkCreateCommandPool(device->GetDevice(), &createInfo, nullptr, &pool), VkCommandPool);
+		VK_CREATE_VALIDATION(vkCreateCommandPool(device->GetDevice(), &createInfo, nullptr, &pool));
 	}
 	void CommandPool::Destroy()
 	{

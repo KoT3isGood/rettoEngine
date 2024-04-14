@@ -1,7 +1,7 @@
 #include "Buffer.h"
 
 namespace rttvk {
-	Buffer::Buffer(LogicalDevice* device, uint32_t size,VkBufferUsageFlags usage)
+	Buffer::Buffer(LogicalDevice* device, VkDeviceSize size,VkBufferUsageFlags usage)
 	{
 		this->device = device;
 		this->size = size;
@@ -18,7 +18,7 @@ namespace rttvk {
 		//uint32_t queue = device->GetGraphicsQueueIndex();
 		//bufferCreateInfo.pQueueFamilyIndices = &queue;
 
-		VK_CREATE_VALIDATION(vkCreateBuffer(device->GetDevice(), &bufferCreateInfo, nullptr, &buffer), VkBuffer);
+		VK_CREATE_VALIDATION(vkCreateBuffer(device->GetDevice(), &bufferCreateInfo, nullptr, &buffer));
 
 		vkGetBufferMemoryRequirements(device->GetDevice(), buffer, &memRequirements);
 
@@ -26,11 +26,11 @@ namespace rttvk {
 		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		allocInfo.allocationSize = memRequirements.size;
 		allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		VK_CREATE_VALIDATION(vkAllocateMemory(device->GetDevice(), &allocInfo, nullptr, &memory), VkMemory Allocation);
+		VK_CREATE_VALIDATION(vkAllocateMemory(device->GetDevice(), &allocInfo, nullptr, &memory));
 		
 
-		VK_CREATE_VALIDATION(vkMapMemory(device->GetDevice(), memory, 0, size, 0, &mapped), Mapping Memory);
-		VK_CREATE_VALIDATION(vkBindBufferMemory(device->GetDevice(), buffer, memory, 0), Bind Memory);
+		VK_CREATE_VALIDATION(vkMapMemory(device->GetDevice(), memory, 0, size, 0, &mapped));
+		VK_CREATE_VALIDATION(vkBindBufferMemory(device->GetDevice(), buffer, memory, 0));
 	}
 	void Buffer::Destroy()
 	{

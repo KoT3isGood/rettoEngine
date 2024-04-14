@@ -14,7 +14,7 @@ namespace rttvk {
 		createInfo.hwnd = window;
 		createInfo.hinstance = hInstance;
 
-		VK_CREATE_VALIDATION(vkCreateWin32SurfaceKHR(instance->GetInstance(),&createInfo,nullptr,&surface), VkSurfaceKHR);
+		VK_CREATE_VALIDATION(vkCreateWin32SurfaceKHR(instance->GetInstance(),&createInfo,nullptr,&surface));
 	}
 	void SurfaceKHR::Destroy()
 	{

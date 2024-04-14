@@ -61,6 +61,8 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)ThirdParty\Vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SmallerTypeCheck />
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -106,7 +108,9 @@
     <ClCompile Include="Rendering\Vulkan\Modules\LogicalDevice.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\Module.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\Pipeline.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\RayTracing\BLAS.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\RayTracing\RTPipeline.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\RayTracing\TLAS.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\SurfaceKHR.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\Swapchain.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\SyncGPU.cpp" />
@@ -130,7 +134,9 @@
     <ClInclude Include="Rendering\Vulkan\Modules\LogicalDevice.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\Module.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\Pipeline.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\RayTracing\BLAS.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\RayTracing\RTPipeline.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\RayTracing\TLAS.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\SurfaceKHR.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\Swapchain.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\SyncGPU.h" />

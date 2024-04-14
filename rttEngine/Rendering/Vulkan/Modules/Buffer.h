@@ -5,13 +5,15 @@
 namespace rttvk {
 	class Buffer: public Module {
 	public:
-		Buffer(LogicalDevice* device, uint32_t size, VkBufferUsageFlags usage);
+		Buffer() = default;
+		Buffer(LogicalDevice* device, VkDeviceSize size, VkBufferUsageFlags usage);
 		virtual void Create() override;
 		virtual void Destroy() override;
 		VkBuffer GetBuffer();
 		void SetData(void* var, size_t size);
 		void* GetMapped();
 		uint32_t GetBufferSize();
+		bool shouldBeMapped = true;
 
 		VkDeviceAddress GetBufferAddress();
 	private:

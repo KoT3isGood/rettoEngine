@@ -9,7 +9,7 @@ namespace rttvk {
 	{
 		VkSemaphoreCreateInfo createInfo {};
 		createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		VK_CREATE_VALIDATION(vkCreateSemaphore(device->GetDevice(), &createInfo, nullptr, &semaphore),VkSemaphore);
+		VK_CREATE_VALIDATION(vkCreateSemaphore(device->GetDevice(), &createInfo, nullptr, &semaphore));
 	}
 	void Semaphore::Destroy()
 	{
@@ -32,7 +32,7 @@ namespace rttvk {
 		VkFenceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-		VK_CREATE_VALIDATION(vkCreateFence(device->GetDevice(), &createInfo, nullptr, &fence), VkFence);
+		VK_CREATE_VALIDATION(vkCreateFence(device->GetDevice(), &createInfo, nullptr, &fence));
 	}
 	void Fence::Destroy()
 	{

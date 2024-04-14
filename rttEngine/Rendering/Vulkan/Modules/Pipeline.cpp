@@ -32,19 +32,19 @@ namespace rttvk{
 		descriptorInfo.bindingCount = bindings.size();
 		descriptorInfo.pBindings = bindings.data();
 
-		VK_CREATE_VALIDATION(vkCreateDescriptorSetLayout(device->GetDevice(), &descriptorInfo, nullptr, &descriptor), VkDescriptorSetLayout);
+		VK_CREATE_VALIDATION(vkCreateDescriptorSetLayout(device->GetDevice(), &descriptorInfo, nullptr, &descriptor));
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.pSetLayouts = &descriptor;
 		pipelineLayoutInfo.setLayoutCount = 1;
-		VK_CREATE_VALIDATION(vkCreatePipelineLayout(device->GetDevice(), &pipelineLayoutInfo, nullptr, &layout), VkPipelineLayout);
+		VK_CREATE_VALIDATION(vkCreatePipelineLayout(device->GetDevice(), &pipelineLayoutInfo, nullptr, &layout));
 
 
 
 		VkPipelineCacheCreateInfo cacheCreateInfo{};
 		cacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-		VK_CREATE_VALIDATION(vkCreatePipelineCache(device->GetDevice(), &cacheCreateInfo, nullptr, &cache), VkPipelineCache);
+		VK_CREATE_VALIDATION(vkCreatePipelineCache(device->GetDevice(), &cacheCreateInfo, nullptr, &cache));
 
 		VkComputePipelineCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -52,7 +52,7 @@ namespace rttvk{
 		createInfo.stage = shader->shaderStageInfo;
 
 
-		VK_CREATE_VALIDATION(vkCreateComputePipelines(device->GetDevice(), cache, 1, &createInfo, nullptr, &pipeline), VkPipeline);
+		VK_CREATE_VALIDATION(vkCreateComputePipelines(device->GetDevice(), cache, 1, &createInfo, nullptr, &pipeline));
 	}
 	void Pipeline::Destroy()
 	{

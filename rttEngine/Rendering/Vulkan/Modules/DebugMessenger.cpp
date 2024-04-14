@@ -20,7 +20,7 @@ namespace rttvk {
 
 		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance->GetInstance(), "vkCreateDebugUtilsMessengerEXT");
 		if (func != nullptr) {
-			VK_CREATE_VALIDATION(func(instance->GetInstance(), &createInfo, nullptr, &debugMessenger), VkDebugUtilsMessengerEXT);
+			VK_CREATE_VALIDATION(func(instance->GetInstance(), &createInfo, nullptr, &debugMessenger));
 			return;
 		}
 		RTT_ASSERT(0);

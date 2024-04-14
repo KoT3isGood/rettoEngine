@@ -20,7 +20,7 @@ namespace rttvk {
 		createInfo.ppEnabledLayerNames = layers.data();
 
 
-		VK_CREATE_VALIDATION(vkCreateInstance(&createInfo,nullptr,&instance), VkInstance);
+		VK_CREATE_VALIDATION(vkCreateInstance(&createInfo,nullptr,&instance));
 	}
 	void Instance::Destroy()
 	{
