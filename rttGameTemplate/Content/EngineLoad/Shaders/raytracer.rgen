@@ -18,7 +18,7 @@ void main() {
     coords.r = float(gl_LaunchIDEXT.x) / float(gl_LaunchSizeEXT.x);
     coords.g = float(gl_LaunchIDEXT.y) / float(gl_LaunchSizeEXT.y);
     
-    vec2 texCoords = (coords-0.5)/resolution.resData.yx*resolution.resData.y;
+    vec2 texCoords = (coords-0.5)/resolution.resData.yx*resolution.resData.x;
 
     vec3 origin = vec3(-5,0,0);
 
@@ -33,7 +33,7 @@ void main() {
           origin,     // ray origin
           0.001,           // ray min range
           direction,  // ray direction
-          1000,           // ray max range
+          10000,           // ray max range
           0               // payload (location = 0)
     );
      imageStore(colorBuffer, ivec2(gl_LaunchIDEXT.xy), vec4(prd.hitValue, 0.0));

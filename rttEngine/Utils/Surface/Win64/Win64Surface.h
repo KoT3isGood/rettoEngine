@@ -4,9 +4,9 @@
 #ifdef Win64
 #include <windows.h>
 #include <tchar.h>
-#include "Runtime\Surface\Surface.h"
+#include "Utils\Surface\Surface.h"
 
-#include "Runtime\Layers\Layer.h"
+#include "Utils\Layers\Layer.h"
 namespace rttvk {
 
 	class SurfaceKHR;

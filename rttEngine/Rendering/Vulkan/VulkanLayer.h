@@ -1,5 +1,5 @@
 #pragma once
-#include "Runtime\Layers\RenderingLayer.h"
+#include "Utils\Layers\RenderingLayer.h"
 
 
 #include "Vulkan\vulkan.h"
@@ -12,13 +12,13 @@ namespace rttvk{
 #include "Vulkan\vulkan_win32.h"
 
 class Win64Surface;
-#include "Runtime\Surface\Win64\Win64Surface.h"
+#include "Utils\Surface\Win64\Win64Surface.h"
 #endif
 
 #include <chrono>
 
 #include <vector>
-#include "Runtime\Application\ProcessInfo.h"
+#include "Utils\Application\ProcessInfo.h"
 
 
 
@@ -79,6 +79,8 @@ private:
 	rttvk::Swapchain swapchain = rttvk::Swapchain(&surface, &logicalDevice);
 	std::vector<VkImage> images;
 	std::vector<rttvk::ImageView> imageViews;
+
+	void Resize();
 
 	rttvk::Shader computeShader = rttvk::Shader();
 	rttvk::Pipeline pipeline = rttvk::Pipeline(&computeShader,&logicalDevice);

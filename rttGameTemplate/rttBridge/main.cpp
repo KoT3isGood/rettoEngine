@@ -1,6 +1,6 @@
                
 #define RTT_CURRENT_APP "rttGame"
-#include "Runtime\Application\AppGeneration.h"
+#include "Utils\Application\AppGeneration.h"
 
 AppInfo appInfo{
 	"rttGame",  // App Name

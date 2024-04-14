@@ -74,7 +74,6 @@ void Win64Surface::StartUpdateLoop()
 {
 	MSG msg;
 	while (shouldRun) {
-		
 
 		currentTime = getRunningTime();
 		float delta = currentTime - previousTime;
@@ -95,9 +94,10 @@ void Win64Surface::StartUpdateLoop()
 
 		vkLayer->resolution[0] = resolutionX;
 		vkLayer->resolution[1] = resolutionY;
+
 		// Loop
 		if (PeekMessage(&msg, NULL, NULL, NULL, PM_REMOVE)) {
-			TranslateMessage(&msg);
+			TranslateMessage(&msg);;
 			DispatchMessageW(&msg);
 		}
 		vkLayer->Draw();
@@ -117,9 +117,9 @@ LRESULT Win64Surface::WindowEventHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 		break;
 	}
 	case WM_SIZE:
-		
 		window->resolutionX = LOWORD(lParam);
 		window->resolutionY = HIWORD(lParam);
+		break;
 	default:
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 		break;

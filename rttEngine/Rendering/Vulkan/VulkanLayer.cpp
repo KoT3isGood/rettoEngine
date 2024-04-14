@@ -250,10 +250,14 @@ VulkanLayer::~VulkanLayer()
 	renderFinished.Destroy();
 	commandPool.Destroy();
 	pipeline.Destroy();
-	for (int i = 0; i < imageViews.size(); i++) {
-		imageViews[i].Destroy();
+	
+	if (swapchain.isOk)
+	{
+		for (int i = 0; i < imageViews.size(); i++) {
+			imageViews[i].Destroy();
+		}
+		swapchain.Destroy();
 	}
-	swapchain.Destroy();
 	surface.Destroy();
 	logicalDevice.Destroy();
 	debugMessenger.Destroy();
@@ -290,7 +294,6 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
 	
 	memcpy(resolutionBuffer.GetMapped(),resolution, sizeof(resolution));
-	RTT_LOG("Resolution: " + std::to_string(resolution[0]) + ", " + std::to_string(resolution[1]));
 
 	VkDescriptorImageInfo imageInfo = {};
 	imageInfo.imageView = imageViews[imageIndex].GetImageView();
@@ -353,7 +356,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 
 	VkStridedDeviceAddressRegionKHR sbt_null{};
 	
-	vkCmdTraceRaysKHR(commandBuffer.GetBuffer(), &rgenRegion, &rmissRegion, &rchitRegion, &sbt_null, 1280, 720, 1);
+	vkCmdTraceRaysKHR(commandBuffer.GetBuffer(), &rgenRegion, &rmissRegion, &rchitRegion, &sbt_null, resolution[0], resolution[1], 1);
 
 	ChangeImageLayout(images[imageIndex], VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
@@ -365,7 +368,12 @@ void VulkanLayer::Draw()
 	vkResetFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP());
 
 	uint32_t imageIndex = 0;
-	vkAcquireNextImageKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), UINT64_MAX, imageAvailable.GetSemaphore(), inFlightFence.GetFence(), &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), UINT64_MAX, imageAvailable.GetSemaphore(), inFlightFence.GetFence(), &imageIndex);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		Resize();
+		return;
+	}
 
 	vkResetCommandBuffer(commandBuffer.GetBuffer(), 0);
 	RecordCommandBuffer(imageIndex);
@@ -395,6 +403,33 @@ void VulkanLayer::Draw()
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapchains;
 	presentInfo.pImageIndices = &imageIndex;
-	VkResult result = vkQueuePresentKHR(logicalDevice.GetPresentQueue(), &presentInfo);
+	result = vkQueuePresentKHR(logicalDevice.GetPresentQueue(), &presentInfo);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+		Resize();
+	}
+}
+
+void VulkanLayer::Resize()
+{
+	vkDeviceWaitIdle(logicalDevice.GetDevice());
+	swapchain.Destroy();
+	for (int i = 0; i < imageViews.size(); i++) {
+		imageViews[i].Destroy();
+	}
+	swapchain.Create();
+	if (!swapchain.isOk)
+	{
+		return;
+	}
+	uint32_t imageCount = 0;
+	vkGetSwapchainImagesKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), &imageCount, nullptr);
+	images.resize(imageCount);
+	imageViews.resize(imageCount);
+	vkGetSwapchainImagesKHR(logicalDevice.GetDevice(), swapchain.GetSwapchain(), &imageCount, images.data());
+
+	for (int i = 0; i < imageViews.size(); i++) {
+		imageViews[i] = rttvk::ImageView(&logicalDevice, images[0]);
+		imageViews[i].Create();
+	}
 }
 

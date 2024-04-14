@@ -10,6 +10,73 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Objects\Actor.h" />
+    <ClInclude Include="Objects\Level.h" />
+    <ClInclude Include="Objects\Mesh.h" />
+    <ClInclude Include="Rendering\ShaderCompiler\Shader.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\Buffer.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\CommandBuffer.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\CommandPool.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\DebugMessenger.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\ImageView.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\Instance.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\LogicalDevice.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\Module.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\Pipeline.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\RayTracing\BLAS.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\RayTracing\RTPipeline.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\RayTracing\TLAS.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\SurfaceKHR.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\Swapchain.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\SyncGPU.h" />
+    <ClInclude Include="Rendering\Vulkan\VulkanLayer.h" />
+    <ClInclude Include="Utils\Application\AppGeneration.h" />
+    <ClInclude Include="Utils\Application\AppInfo.h" />
+    <ClInclude Include="Utils\Application\ProcessInfo.h" />
+    <ClInclude Include="Utils\Layers\Layer.h" />
+    <ClInclude Include="Utils\Layers\RenderingLayer.h" />
+    <ClInclude Include="Utils\Layers\Sublayer.h" />
+    <ClInclude Include="Utils\Logging\Logger.h" />
+    <ClInclude Include="Utils\MeshLoader\obj\ObjLoader.h" />
+    <ClInclude Include="Utils\Surface\Surface.h" />
+    <ClInclude Include="Utils\Surface\Win64\Win64Surface.h" />
+    <ClInclude Include="Utils\Tokenizer\Tokenizer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Objects\Actor.cpp" />
+    <ClCompile Include="Objects\Level.cpp" />
+    <ClCompile Include="Objects\Mesh.cpp" />
+    <ClCompile Include="Rendering\ShaderCompiler\Shader.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\Buffer.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\CommandBuffer.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\CommandPool.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\DebugMessenger.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\ImageView.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\Instance.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\LogicalDevice.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\Module.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\Pipeline.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\RayTracing\BLAS.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\RayTracing\RTPipeline.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\RayTracing\TLAS.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\SurfaceKHR.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\Swapchain.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\SyncGPU.cpp" />
+    <ClCompile Include="Rendering\Vulkan\VulkanLayer.cpp" />
+    <ClCompile Include="Utils\Application\ProcessInfo.cpp" />
+    <ClCompile Include="Utils\Layers\Layer.cpp" />
+    <ClCompile Include="Utils\Layers\RenderingLayer.cpp" />
+    <ClCompile Include="Utils\Layers\Sublayer.cpp" />
+    <ClCompile Include="Utils\Logging\Logger.cpp" />
+    <ClCompile Include="Utils\MeshLoader\obj\ObjLoader.cpp" />
+    <ClCompile Include="Utils\Surface\Surface.cpp" />
+    <ClCompile Include="Utils\Surface\Win64\Win64Surface.cpp" />
+    <ClCompile Include="Utils\Tokenizer\Tokenizer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Rendering\ShaderCompiler\Shaders\shader.vert" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -97,60 +164,6 @@
       <AdditionalDependencies>vulkan-1.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Rendering\ShaderCompiler\Shader.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\Buffer.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\CommandBuffer.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\CommandPool.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\DebugMessenger.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\ImageView.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\Instance.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\LogicalDevice.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\Module.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\Pipeline.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\RayTracing\BLAS.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\RayTracing\RTPipeline.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\RayTracing\TLAS.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\SurfaceKHR.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\Swapchain.cpp" />
-    <ClCompile Include="Rendering\Vulkan\Modules\SyncGPU.cpp" />
-    <ClCompile Include="Rendering\Vulkan\VulkanLayer.cpp" />
-    <ClCompile Include="Runtime\Application\ProcessInfo.cpp" />
-    <ClCompile Include="Runtime\Layers\Layer.cpp" />
-    <ClCompile Include="Runtime\Layers\RenderingLayer.cpp" />
-    <ClCompile Include="Runtime\Layers\Sublayer.cpp" />
-    <ClCompile Include="Runtime\Logging\Logger.cpp" />
-    <ClCompile Include="Runtime\Surface\Surface.cpp" />
-    <ClCompile Include="Runtime\Surface\Win64\Win64Surface.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Rendering\ShaderCompiler\Shader.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\Buffer.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\CommandBuffer.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\CommandPool.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\DebugMessenger.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\ImageView.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\Instance.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\LogicalDevice.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\Module.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\Pipeline.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\RayTracing\BLAS.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\RayTracing\RTPipeline.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\RayTracing\TLAS.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\SurfaceKHR.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\Swapchain.h" />
-    <ClInclude Include="Rendering\Vulkan\Modules\SyncGPU.h" />
-    <ClInclude Include="Rendering\Vulkan\VulkanLayer.h" />
-    <ClInclude Include="Runtime\Application\AppInfo.h" />
-    <ClInclude Include="Runtime\Application\AppGeneration.h" />
-    <ClInclude Include="Runtime\Application\ProcessInfo.h" />
-    <ClInclude Include="Runtime\Layers\Layer.h" />
-    <ClInclude Include="Runtime\Layers\RenderingLayer.h" />
-    <ClInclude Include="Runtime\Layers\Sublayer.h" />
-    <ClInclude Include="Runtime\Logging\Logger.h" />
-    <ClInclude Include="Runtime\Surface\Surface.h" />
-    <ClInclude Include="Runtime\Surface\Win64\Win64Surface.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

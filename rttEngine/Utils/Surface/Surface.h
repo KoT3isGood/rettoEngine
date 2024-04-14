@@ -1,5 +1,5 @@
 #pragma once
-#include "Runtime\Logging\Logger.h"
+#include "Utils\Logging\Logger.h"
 
 enum class SurfaceType {
 	none = 0,

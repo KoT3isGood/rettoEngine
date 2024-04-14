@@ -2,11 +2,11 @@
 
 #include "AppInfo.h"
 #include <iostream>
-#include "Runtime\Logging\Logger.h"
+#include "Utils\Logging\Logger.h"
 #include "ProcessInfo.h"
 
 #ifdef Win64
-#include "Runtime/Surface/Win64/Win64Surface.h"
+#include "Utils/Surface/Win64/Win64Surface.h"
 #ifdef ReleaseRTT
 #define CREATE_GAME(appinfo) \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow){\

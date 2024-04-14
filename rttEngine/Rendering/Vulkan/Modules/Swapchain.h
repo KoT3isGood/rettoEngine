@@ -10,6 +10,7 @@ namespace rttvk {
 		virtual void Create() override;
 		virtual void Destroy() override;
 		VkSwapchainKHR GetSwapchain();
+		bool isOk = true;
 	private:
 		VkSwapchainKHR swapchain;
 		LogicalDevice* device;
