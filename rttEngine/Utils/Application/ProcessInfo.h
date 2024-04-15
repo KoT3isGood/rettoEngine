@@ -2,8 +2,10 @@
 #include "AppInfo.h"
 #include "Utils\Layers\RenderingLayer.h"
 #include "Utils\Surface\Surface.h"
-#include "Objects\Level.h"
 #include <chrono>
+
+class Level;
+#include "Objects\Level.h"
 
 struct ProcessInfo {
 	int argc;

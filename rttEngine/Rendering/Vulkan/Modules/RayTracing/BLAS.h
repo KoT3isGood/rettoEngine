@@ -1,11 +1,13 @@
 #pragma once
 #include "..\LogicalDevice.h";
 #include "..\Buffer.h";
-#include "..\CommandBuffer.h";
+#include "..\CommandBuffer.h"
+#include "Utils\Application\ProcessInfo.h"
+#include "Utils\MeshLoader\MeshData.h"
 namespace rttvk {
 	class BLAS : public Module {
 	public:
-		BLAS(LogicalDevice* device);
+		BLAS(LogicalDevice* device, MeshData* meshData);
 		virtual void Create() override;
 		virtual void Destroy() override;
 		void Build();
@@ -13,6 +15,7 @@ namespace rttvk {
 		VkDeviceAddress GetAccelerationStructureAddress();
 		
 	private:
+		MeshData* meshData;
 		LogicalDevice* device;
 
 		Buffer vertexBuffer;
@@ -31,3 +34,4 @@ namespace rttvk {
 		CommandBuffer cmd;
 	};
 }
+

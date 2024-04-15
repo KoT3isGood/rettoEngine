@@ -37,6 +37,10 @@ class Win64Surface;
 #include "Modules\RayTracing\RTPipeline.h"
 #include "Modules\RayTracing\BLAS.h"
 #include "Modules\RayTracing\TLAS.h"
+
+
+#include "Utils\MeshLoader\MeshData.h"
+#include "Utils\MeshLoader\Obj/ObjLoader.h"
 #define VK_VALIDATE(result, vkStruct) if(result==-4) {\
 RTT_LOG(std::string("HOW DID YOU LOSE YOUR GPU? ")); \
 }
@@ -57,7 +61,7 @@ private:
 		VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 
 		},{
-			"VK_LAYER_KHRONOS_validation"
+			//"VK_LAYER_KHRONOS_validation"
 		});
 
 	rttvk::DebugMessenger debugMessenger = rttvk::DebugMessenger(&instance);
@@ -166,7 +170,10 @@ private:
 
 	bool hasbuilt = false;
 
-	rttvk::BLAS blas = rttvk::BLAS(&logicalDevice);
+	rttvk::BLAS blas = rttvk::BLAS(&logicalDevice,&cube);
 	rttvk::TLAS tlas = rttvk::TLAS(&logicalDevice, &blas);
 
+
+	MeshData cube = MeshData();
+	OBJLoader cubeLoader = OBJLoader("Content/Meshes/cube.obj", &cube);
 };

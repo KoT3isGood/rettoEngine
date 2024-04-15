@@ -77,7 +77,7 @@
       <PreprocessorDefinitions>Debug;Win64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>E:\rtt\rtt\rttEngine;E:\rtt\rtt\rttEngine\ThirdParty\Vulkan\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\rtt\rtt\rttEngine;E:\rtt\rtt\rttEngine\ThirdParty\Vulkan\Include;$(ProjectDir)\Source</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,8 +128,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Props\TestProp.cpp" />
-    <ClCompile Include="rttBridge\main.cpp" />
+    <ClCompile Include="Main\main.cpp" />
+    <ClCompile Include="Source\MeshTest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Main\SetProperties.h" />
+    <ClInclude Include="Source\MeshTest.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

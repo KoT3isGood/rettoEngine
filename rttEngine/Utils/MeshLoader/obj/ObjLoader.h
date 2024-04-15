@@ -1,12 +1,15 @@
 #pragma once
 #include "Utils\Tokenizer\Tokenizer.h"
-
+#include "Utils\Logging\Logger.h"
+#include "Utils\MeshLoader\MeshData.h"
 class OBJLoader {
 public:
 	OBJLoader() = default;
-	std::vector<float> vertices;
-	std::vector<uint32_t> indicies;
+	OBJLoader(std::string file, MeshData* mesh);
 private:
 	Tokenizer tokenizer;
-	OBJLoader(std::string file);
+	int token = 0;
+	uint32_t vertex=0;
+	uint32_t index=0;
+	void skipSpaces();
 };

@@ -38,7 +38,8 @@
     <ClInclude Include="Utils\Layers\RenderingLayer.h" />
     <ClInclude Include="Utils\Layers\Sublayer.h" />
     <ClInclude Include="Utils\Logging\Logger.h" />
-    <ClInclude Include="Utils\MeshLoader\obj\ObjLoader.h" />
+    <ClInclude Include="Utils\MeshLoader\MeshData.h" />
+    <ClInclude Include="Utils\MeshLoader\Obj\ObjLoader.h" />
     <ClInclude Include="Utils\Surface\Surface.h" />
     <ClInclude Include="Utils\Surface\Win64\Win64Surface.h" />
     <ClInclude Include="Utils\Tokenizer\Tokenizer.h" />
@@ -69,7 +70,8 @@
     <ClCompile Include="Utils\Layers\RenderingLayer.cpp" />
     <ClCompile Include="Utils\Layers\Sublayer.cpp" />
     <ClCompile Include="Utils\Logging\Logger.cpp" />
-    <ClCompile Include="Utils\MeshLoader\obj\ObjLoader.cpp" />
+    <ClCompile Include="Utils\MeshLoader\MeshData.cpp" />
+    <ClCompile Include="Utils\MeshLoader\Obj\ObjLoader.cpp" />
     <ClCompile Include="Utils\Surface\Surface.cpp" />
     <ClCompile Include="Utils\Surface\Win64\Win64Surface.cpp" />
     <ClCompile Include="Utils\Tokenizer\Tokenizer.cpp" />

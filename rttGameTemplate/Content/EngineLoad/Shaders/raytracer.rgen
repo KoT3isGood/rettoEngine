@@ -12,6 +12,7 @@ struct hitPayload
 };
 layout(location = 0) rayPayloadEXT hitPayload prd;
 
+
 void main() {
 
     vec2 coords = vec2(0.0, 0.0);

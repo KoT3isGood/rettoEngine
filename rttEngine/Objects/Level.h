@@ -1,5 +1,6 @@
 #pragma once
 #include "Actor.h"
+#include "Utils\Application\ProcessInfo.h"
 
 class Level {
 public:
@@ -13,3 +14,5 @@ public:
 private:
 	std::vector<Actor*> actors;
 };
+
+Level* GetCurrentLevel();

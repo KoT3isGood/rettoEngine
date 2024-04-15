@@ -75,10 +75,13 @@ void Win64Surface::StartUpdateLoop()
 	MSG msg;
 	while (shouldRun) {
 
+		
+
 		currentTime = getRunningTime();
 		float delta = currentTime - previousTime;
 		previousTime = currentTime;
 		
+		GetCurrentLevel()->Tick(delta);
 
 		timeToTitleUpdate += delta;
 		if (timeToTitleUpdate>=1.0f ) {

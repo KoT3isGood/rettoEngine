@@ -1,31 +1,20 @@
 #include "BLAS.h"
 namespace rttvk {
-	BLAS::BLAS(LogicalDevice* device)
+	BLAS::BLAS(LogicalDevice* device, MeshData* meshData)
 	{
 		this->device = device;
-
+		this->meshData = meshData;
 		
 	}
 	void BLAS::Create()
 	{
-
-		float trianglesA[] = {
-			0,0,0,
-			0,0,1,
-			0,1,0,
-			0,1,1,
-		};
-		uint32_t indicies[] = {
-			1,2,0,
-			1,2,3
-		};
-		vertexBuffer = Buffer(device, sizeof(trianglesA),
+		vertexBuffer = Buffer(device, meshData->vertices.size()*4,
 			VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
 			VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
 			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
 		);
-		indexBuffer = Buffer(device, sizeof(indicies),
+		indexBuffer = Buffer(device, meshData->indicies.size() * 4,
 			VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
 			VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
@@ -33,18 +22,20 @@ namespace rttvk {
 		);
 
 		vertexBuffer.Create();
+		//vertexBuffer.shouldBeMapped = false;
 		indexBuffer.Create();
-
+		//indexBuffer.shouldBeMapped = false;
 		
-		memcpy(vertexBuffer.GetMapped(), trianglesA, sizeof(trianglesA));
-
-		memcpy(indexBuffer.GetMapped(), indicies, sizeof(indicies));
+		memcpy(vertexBuffer.GetMapped(), meshData->vertices.data(), meshData->vertices.size() * 4);
+		//meshData->vertices = {};
+		memcpy(indexBuffer.GetMapped(), meshData->indicies.data(), meshData->indicies.size() * 4);
+		//meshData->indicies = {};
 
 		triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
 		triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
 		triangles.vertexData.deviceAddress = vertexBuffer.GetBufferAddress();
 		triangles.vertexStride = 12;
-		triangles.maxVertex = sizeof(trianglesA)/12;
+		triangles.maxVertex = meshData->vertices.size()/3;
 		RTT_LOG("triangles.maxVertex: " + std::to_string(triangles.maxVertex));
 		triangles.indexType = VK_INDEX_TYPE_UINT32;
 		triangles.indexData.deviceAddress = indexBuffer.GetBufferAddress();
@@ -56,7 +47,7 @@ namespace rttvk {
 		asGeom.geometry.triangles = triangles;
 
 		offset.firstVertex = 0;
-		offset.primitiveCount = sizeof(indicies)/3;
+		offset.primitiveCount = meshData->indicies.size()/3;
 		RTT_LOG("offset.primitiveCount: "+std::to_string(offset.primitiveCount));
 		offset.primitiveOffset = 0;
 		offset.transformOffset = 0;
@@ -76,7 +67,7 @@ namespace rttvk {
 		VK_FUNCTION(vkCreateAccelerationStructureKHR, device->GetDevice());
 		VK_FUNCTION(vkGetAccelerationStructureBuildSizesKHR, device->GetDevice());
 
-		uint32_t count = sizeof(trianglesA) / 24;
+		uint32_t count = meshData->vertices.size();
 
 		VkAccelerationStructureBuildSizesInfoKHR sizeInfo{};
 		sizeInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
@@ -141,8 +132,11 @@ namespace rttvk {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = cmd.GetBufferP();
 
+		float start = getRunningTime();
 		vkQueueSubmit(device->GetGraphicsQueue(), 1, &submitInfo, nullptr);
 		vkQueueWaitIdle(device->GetGraphicsQueue());
+		float end = getRunningTime();
+		RTT_LOG("It took " + std::to_string(end - start) + "s to build BLAS");
 
 		cmd.Destroy();
 		cmdPool.Destroy();

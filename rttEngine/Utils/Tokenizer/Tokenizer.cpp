@@ -1,11 +1,15 @@
 #include "Tokenizer.h"
-
+#
 Tokenizer::Tokenizer(std::string fileDirectory)
 {
 	currentCharacter = 0;
 	std::string myText = "";
+	
+
+	RTT_LOG(std::filesystem::current_path().string());
 
 	std::ifstream MyReadFile(fileDirectory);
+
 	if (MyReadFile.good()) {
 		// Use a while loop together with the getline() function to read the file line by line
 		while (std::getline(MyReadFile, myText)) {
@@ -20,7 +24,9 @@ Tokenizer::Tokenizer(std::string fileDirectory)
 		}
 		// Close the file
 		MyReadFile.close();
+		return;
 	}
+	RTT_LOG("Failed to load mesh");
 }
 std::string Tokenizer::getNextToken(std::string* text)
 {

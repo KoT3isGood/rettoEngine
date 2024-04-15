@@ -3,6 +3,7 @@
 #include "AppInfo.h"
 #include <iostream>
 #include "Utils\Logging\Logger.h"
+#include "Objects\Level.h"
 #include "ProcessInfo.h"
 
 #ifdef Win64
@@ -18,11 +19,15 @@ surface.StartUpdateLoop(); return 0; \
 }; 
 #else
 #define CREATE_GAME(appinfo) \
+void Init(); \
 int main(int argc, char* argv[]) { \
 getProcessInfo()->argc = argc; \
 getProcessInfo()->argv = argv; \
 getProcessInfo()->appInfo = &appInfo; \
+Level currentLevel = Level(); \
+getProcessInfo()->level = &currentLevel; \
 Win64Surface surface = Win64Surface(appInfo.name); \
+Init(); \
 surface.StartUpdateLoop(); \
 RTT_LOG("GAME WAS CLOSED SUCCESSFULLY, HAVE FUN IN DEVELOPMENT!"); \
 return 0; \
