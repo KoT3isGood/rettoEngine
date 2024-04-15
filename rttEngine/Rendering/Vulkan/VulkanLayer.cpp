@@ -200,8 +200,32 @@ VulkanLayer::VulkanLayer()
 
 
 
+	Mesh testMesh = Mesh();
+	testMesh.pos[0] = 10;
+	testMesh.pos[1] = 0;
+	testMesh.pos[2] = -4;
 
+	Mesh testMesh2 = Mesh();
+	testMesh2.pos[0] = 10;
+	testMesh2.pos[1] = 0;
+	testMesh2.pos[2] = 4;
 
+	Mesh testMesh3 = Mesh();
+	testMesh3.pos[0] = 10;
+	testMesh3.pos[1] = -4;
+	testMesh3.pos[2] = 0;
+
+	Mesh testMesh4 = Mesh();
+	testMesh4.pos[0] = 10;
+	testMesh4.pos[1] = 4;
+	testMesh4.pos[2] = 0;
+
+	Mesh testMesh5 = Mesh();
+	testMesh5.pos[0] = 10;
+	testMesh5.pos[1] = 0;
+	testMesh5.pos[2] = 0;
+	
+	meshes = { testMesh,testMesh2,testMesh3,testMesh4,testMesh5 };
 
 	blas.Create();
 	tlas.Create();
@@ -334,10 +358,12 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsRes.pBufferInfo = &resolutionInfo;
 
 
+
 	VkWriteDescriptorSet wdss[]={ wds ,wdsA, wdsRes };
 
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 3, wdss, 0, nullptr);
+	
 
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 3, wdss, 0, nullptr);
 
 
 
@@ -348,7 +374,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
 
-	
+	tlas.Update();
 
 	ChangeImageLayout(images[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rtPipeline.GetPipeline());
@@ -364,6 +390,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 }
 void VulkanLayer::Draw()
 { 
+
 	vkWaitForFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP(), VK_TRUE, UINT64_MAX);
 	vkResetFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP());
 
@@ -407,6 +434,7 @@ void VulkanLayer::Draw()
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
 		Resize();
 	}
+	ResetMeshes();
 }
 
 void VulkanLayer::Resize()

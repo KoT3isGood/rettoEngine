@@ -5,6 +5,7 @@
 #include <chrono>
 
 class Level;
+class RenderingLayer;
 #include "Objects\Level.h"
 
 struct ProcessInfo {

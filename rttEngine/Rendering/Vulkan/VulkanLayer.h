@@ -18,6 +18,7 @@ class Win64Surface;
 #include <chrono>
 
 #include <vector>
+struct ProcessInfo;
 #include "Utils\Application\ProcessInfo.h"
 
 
@@ -61,7 +62,7 @@ private:
 		VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 
 		},{
-			//"VK_LAYER_KHRONOS_validation"
+			"VK_LAYER_KHRONOS_validation"
 		});
 
 	rttvk::DebugMessenger debugMessenger = rttvk::DebugMessenger(&instance);
@@ -171,9 +172,10 @@ private:
 	bool hasbuilt = false;
 
 	rttvk::BLAS blas = rttvk::BLAS(&logicalDevice,&cube);
-	rttvk::TLAS tlas = rttvk::TLAS(&logicalDevice, &blas);
+	std::vector<rttvk::BLAS*> blases = {&blas};
+	rttvk::TLAS tlas = rttvk::TLAS(&logicalDevice,&meshes, &blases);
 
 
 	MeshData cube = MeshData();
-	OBJLoader cubeLoader = OBJLoader("Content/Meshes/cube.obj", &cube);
+	OBJLoader cubeLoader = OBJLoader("Content/Meshes/spot.obj", &cube);
 };

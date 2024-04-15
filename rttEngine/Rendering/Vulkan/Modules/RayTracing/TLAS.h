@@ -3,18 +3,22 @@
 #include "..\Buffer.h"
 #include "..\CommandBuffer.h";
 #include "BLAS.h";
+#include "Objects\Mesh.h"
 namespace rttvk {
 	class TLAS : public Module {
 	public:
-		TLAS(LogicalDevice* device, BLAS* blas);
+		TLAS(LogicalDevice* device, std::vector<Mesh>* meshes, std::vector<BLAS*>* blases);
 		virtual void Create() override;
 		virtual void Destroy() override;
 		void Build();
+		void Update();
 		VkAccelerationStructureKHR* GetAccelerationStructure();
 		
 		
 	private:
-		BLAS* blas;
+		std::vector<BLAS*>* blases;
+		std::vector<Mesh>* meshes;
+		std::vector<VkAccelerationStructureInstanceKHR> instancesArray = {};
 
 		LogicalDevice* device;
 

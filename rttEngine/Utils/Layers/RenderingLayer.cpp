@@ -4,3 +4,13 @@
 void RenderingLayer::Draw()
 {
 }
+
+void RenderingLayer::DrawMesh(Mesh mesh)
+{
+	meshes.push_back(mesh);
+}
+
+void RenderingLayer::ResetMeshes()
+{
+	meshes = { Mesh() };
+}

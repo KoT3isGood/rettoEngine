@@ -60,6 +60,7 @@ Win64Surface::Win64Surface(const char* windowName)
 
 
 	vkLayer = new VulkanLayer();
+	getProcessInfo()->renderingLayer = vkLayer;
 	renderingLayers.PushBack(vkLayer);
 }
 

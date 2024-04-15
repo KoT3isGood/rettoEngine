@@ -1,31 +1,38 @@
 #include "TLAS.h"
 namespace rttvk {
-	TLAS::TLAS(LogicalDevice* device, BLAS* blas)
+	TLAS::TLAS(LogicalDevice* device, std::vector<Mesh>* meshes, std::vector<BLAS*>* blases)
 	{
 		this->device = device;
-		this->blas = blas;
-		
+		this->meshes = meshes;
+		this->blases = blases;
 	}
 	void TLAS::Create()
 	{
 		
-		instance.transform = VkTransformMatrixKHR{
-			1,0,0,0,
-			0,1,0,0,
-			0,0,1,0
-		};
-		instance.instanceCustomIndex = 0;
-		instance.accelerationStructureReference = blas->GetAccelerationStructureAddress();
-		instance.flags = 0;
-		instance.mask = 0xFF;
-		instance.instanceShaderBindingTableRecordOffset = 0;
+		
 
-		instanceBuffer = Buffer(device, sizeof(VkAccelerationStructureInstanceKHR),
+		instanceBuffer = Buffer(device, sizeof(VkAccelerationStructureInstanceKHR)*meshes->size(),
 			VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
 			VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR
 		);
 		instanceBuffer.Create();
-		memcpy(instanceBuffer.GetMapped(), &instance, sizeof(instance));
+
+		for (int i = 0; i < meshes->size(); i++) {
+			instance.transform = VkTransformMatrixKHR{
+			(*meshes)[i].rot[0],(*meshes)[i].rot[1],(*meshes)[i].rot[2],(*meshes)[i].pos[0],
+			(*meshes)[i].rot[3],(*meshes)[i].rot[4],(*meshes)[i].rot[5],(*meshes)[i].pos[1],
+			(*meshes)[i].rot[6],(*meshes)[i].rot[7],(*meshes)[i].rot[8],(*meshes)[i].pos[2]
+			};
+			
+			instance.instanceCustomIndex = (*meshes)[i].instanceID;
+			instance.accelerationStructureReference = (*blases)[(*meshes)[i].instanceID]->GetAccelerationStructureAddress();
+			instance.flags = 0;
+			instance.mask = 0xFF;
+			instance.instanceShaderBindingTableRecordOffset = 0;
+
+			instancesArray.push_back(instance);
+		}
+		memcpy((uint64_t*)instanceBuffer.GetMapped(), instancesArray.data(), sizeof(VkAccelerationStructureInstanceKHR) * meshes->size());
 
 		instances.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
 		instances.data.deviceAddress = instanceBuffer.GetBufferAddress();
@@ -36,7 +43,7 @@ namespace rttvk {
 		asGeom.geometry.instances = instances;
 
 		offset.firstVertex = 0;
-		offset.primitiveCount = 1;
+		offset.primitiveCount = meshes->size();
 		offset.primitiveOffset = 0;
 		offset.transformOffset = 0;
 
@@ -62,9 +69,6 @@ namespace rttvk {
 
 		vkGetAccelerationStructureBuildSizesKHR(device->GetDevice(), VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &geometryInfo, &count, &sizeInfo);
 
-		RTT_LOG("[ VULKAN ] [ TLAS ] Build Sizes");
-		RTT_LOG("[ VULKAN ] [ TLAS ] Acceleration structure size: "+std::to_string(sizeInfo.accelerationStructureSize));
-		RTT_LOG("[ VULKAN ] [ TLAS ] Scratch size: " + std::to_string(sizeInfo.buildScratchSize));
 
 		scratchBuffer = Buffer(device, sizeInfo.buildScratchSize,
 			VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
@@ -112,8 +116,7 @@ namespace rttvk {
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		vkBeginCommandBuffer(cmd.GetBuffer(), &beginInfo);
 		VK_FUNCTION(vkCmdBuildAccelerationStructuresKHR, device->GetDevice());
-		VkAccelerationStructureBuildRangeInfoKHR        buildOffsetInfo{ 1, 0, 0, 0 };
-		const VkAccelerationStructureBuildRangeInfoKHR* pBuildOffsetInfo = &buildOffsetInfo;
+		const VkAccelerationStructureBuildRangeInfoKHR* pBuildOffsetInfo = &offset;
 		vkCmdBuildAccelerationStructuresKHR(cmd.GetBuffer(), 1, &geometryInfo, &pBuildOffsetInfo);
 		vkEndCommandBuffer(cmd.GetBuffer());
 
@@ -127,6 +130,12 @@ namespace rttvk {
 
 		cmd.Destroy();
 		cmdPool.Destroy();
+	}
+	void TLAS::Update()
+	{
+		VK_FUNCTION(vkCmdBuildAccelerationStructuresKHR, device->GetDevice());
+		const VkAccelerationStructureBuildRangeInfoKHR* pBuildOffsetInfo = &offset;
+		//vkCmdBuildAccelerationStructuresKHR(cmd.GetBuffer(), 1, &geometryInfo, &pBuildOffsetInfo);
 	}
 	VkAccelerationStructureKHR* TLAS::GetAccelerationStructure()
 	{
