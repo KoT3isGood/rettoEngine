@@ -97,8 +97,12 @@ VulkanLayer::VulkanLayer()
 	missShader = rttvk::Shader("Content/EngineLoad/Shaders/raytracer.rmiss", &logicalDevice, VK_SHADER_STAGE_MISS_BIT_KHR);
 	missShader.Create();
 
+	shadowMissShader = rttvk::Shader("Content/EngineLoad/Shaders/raytracershadow.rmiss", &logicalDevice, VK_SHADER_STAGE_MISS_BIT_KHR);
+	shadowMissShader.Create();
+
 	closestHitShader = rttvk::Shader("Content/EngineLoad/Shaders/raytracer.rchit", &logicalDevice, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
 	closestHitShader.Create();
+
 
 	rtPipeline.Create();
 
@@ -150,7 +154,7 @@ VulkanLayer::VulkanLayer()
 
 
 
-
+	// Shader binding table
 	VkPhysicalDeviceProperties physicalDeviceProperties;
 	vkGetPhysicalDeviceProperties(chosenPhysicalDevice,
 		&physicalDeviceProperties);
@@ -166,67 +170,48 @@ VulkanLayer::VulkanLayer()
 	vkGetPhysicalDeviceProperties2(chosenPhysicalDevice,
 		&physicalDeviceProperties2);
 
-	
-	//uint32_t align = (physicalDeviceRayTracingPipelineProperties.shaderGroupHandleSize + physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(physicalDeviceRayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
-
-	uint32_t handleSizeAligned = align(rtProperties.shaderGroupHandleSize, rtProperties.shaderGroupHandleAlignment);
-	RTT_LOG("rgenShaderBindingTable.size = " + std::to_string(rgenRegion.size));
-	rgenRegion.size = align(handleSizeAligned, rtProperties.shaderGroupBaseAlignment);
-	rgenRegion.stride = rgenRegion.size;
-	rmissRegion.size = align(1*handleSizeAligned, rtProperties.shaderGroupBaseAlignment);
+	// FIXME: Use better way to find sizes
+	const uint32_t handleSize = rtProperties.shaderGroupHandleSize;
+	const uint32_t handleSizeAligned = align(rtProperties.shaderGroupHandleSize, rtProperties.shaderGroupHandleAlignment);
+	RTT_LOG("handleSizeAligned: "+std::to_string(handleSizeAligned));
+	rgenRegion.size = handleSizeAligned;
+	rgenRegion.stride = handleSizeAligned;
+	rmissRegion.size = handleSizeAligned;
 	rmissRegion.stride = handleSizeAligned;
-	rchitRegion.size = align(1*handleSizeAligned, rtProperties.shaderGroupBaseAlignment);
+	rchitRegion.size = handleSizeAligned;
 	rchitRegion.stride = handleSizeAligned;
 	
 	shaderBindingTable = rttvk::Buffer(&logicalDevice, rgenRegion.size+ rmissRegion.size+ rchitRegion.size, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR);
-
 	shaderBindingTable.Create();
 	
+	
 
-	uint32_t             dataSize = 1 * rtProperties.shaderGroupHandleSize;
-	std::vector<uint8_t> handles(dataSize);
+	uint32_t             dataSize = 4 * handleSizeAligned;
 	PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR)vkGetDeviceProcAddr(logicalDevice.GetDevice(), "vkGetRayTracingShaderGroupHandlesKHR");
-	VK_VALIDATE(vkGetRayTracingShaderGroupHandlesKHR(logicalDevice.GetDevice(), rtPipeline.GetPipeline(), 0, 1, dataSize, shaderBindingTable.GetMapped()), vkGetRayTracingShaderGroupHandlesKHR);
+	vkGetRayTracingShaderGroupHandlesKHR(logicalDevice.GetDevice(), rtPipeline.GetPipeline(), 0, 4, dataSize, shaderBindingTable.GetMapped());
 
-
-	VkBufferDeviceAddressInfo bdai{VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
-	bdai.buffer = shaderBindingTable.GetBuffer();
-	VkDeviceAddress address = vkGetBufferDeviceAddress(logicalDevice.GetDevice(), &bdai);
 
 	rgenRegion.deviceAddress = shaderBindingTable.GetBufferAddress();
-	rmissRegion.deviceAddress = shaderBindingTable.GetBufferAddress()+rgenRegion.size;
-	rchitRegion.deviceAddress = shaderBindingTable.GetBufferAddress() +rgenRegion.size+rmissRegion.size;
+	RTT_LOG("rgenRegion.deviceAddress: " + std::to_string(rgenRegion.deviceAddress));
+	rmissRegion.deviceAddress = shaderBindingTable.GetBufferAddress()+32;
+	RTT_LOG("rmissRegion.deviceAddress: " + std::to_string(rmissRegion.deviceAddress));
+	rchitRegion.deviceAddress = shaderBindingTable.GetBufferAddress() + 64+32;
+	RTT_LOG("rchitRegion.deviceAddress: " + std::to_string(rchitRegion.deviceAddress));
 
 
-
+	// Some test meshes to test how tlas works
 
 	Mesh testMesh = Mesh();
-	testMesh.pos[0] = 10;
+	testMesh.pos[0] = 0;
 	testMesh.pos[1] = 0;
-	testMesh.pos[2] = -4;
+	testMesh.pos[2] = 0;
 
-	Mesh testMesh2 = Mesh();
-	testMesh2.pos[0] = 10;
-	testMesh2.pos[1] = 0;
-	testMesh2.pos[2] = 4;
-
-	Mesh testMesh3 = Mesh();
-	testMesh3.pos[0] = 10;
-	testMesh3.pos[1] = -4;
-	testMesh3.pos[2] = 0;
-
-	Mesh testMesh4 = Mesh();
-	testMesh4.pos[0] = 10;
-	testMesh4.pos[1] = 4;
-	testMesh4.pos[2] = 0;
-
-	Mesh testMesh5 = Mesh();
-	testMesh5.pos[0] = 10;
-	testMesh5.pos[1] = 0;
-	testMesh5.pos[2] = 0;
 	
-	meshes = { testMesh,testMesh2,testMesh3,testMesh4,testMesh5 };
+	
+	meshes = { testMesh };
 
+
+	// Creating and building acceleration structures
 	blas.Create();
 	tlas.Create();
 	blas.Build();

@@ -13,7 +13,7 @@ namespace rttvk {
 
 
 		for (auto& binding : descSetlayout) {
-			binding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+			binding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
 		}
 
 		VkDescriptorSetLayoutCreateInfo descriptorInfo{};
@@ -59,17 +59,25 @@ namespace rttvk {
 		group.intersectionShader = VK_SHADER_UNUSED_KHR;
 		groups.push_back(group);
 
+		group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+		group.anyHitShader = VK_SHADER_UNUSED_KHR;
+		group.closestHitShader = VK_SHADER_UNUSED_KHR;
+		group.generalShader = 2;
+		group.intersectionShader = VK_SHADER_UNUSED_KHR;
+		groups.push_back(group);
+
 		group.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
 		group.anyHitShader = VK_SHADER_UNUSED_KHR;
-		group.closestHitShader = 2;
+		group.closestHitShader = 3;
 		group.generalShader = VK_SHADER_UNUSED_KHR;
 		group.intersectionShader = VK_SHADER_UNUSED_KHR;
 		groups.push_back(group);
 
 
+
 		createInfo.groupCount = groups.size();
 		createInfo.pGroups = groups.data();
-		createInfo.maxPipelineRayRecursionDepth = 1;
+		createInfo.maxPipelineRayRecursionDepth = 2;
 		createInfo.layout = layout;
 
 		VK_CREATE_VALIDATION(vkCreateRayTracingPipelinesKHR(device->GetDevice(),nullptr,nullptr,1,&createInfo,nullptr,&pipeline));

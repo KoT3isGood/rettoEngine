@@ -73,7 +73,8 @@ private:
 			VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
 			VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-			"VK_KHR_buffer_device_address"
+			VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+			VK_KHR_RAY_TRACING_POSITION_FETCH_EXTENSION_NAME
 		},{
 
 		});
@@ -141,10 +142,14 @@ private:
 
 	rttvk::Buffer resolutionBuffer;
 private:
+
+	// Ray tracing
+
 	rttvk::Shader rayGenShader = rttvk::Shader();
 	rttvk::Shader missShader = rttvk::Shader();
 	rttvk::Shader closestHitShader = rttvk::Shader();
-	std::vector<rttvk::Shader*> rayTracingShaders = { &rayGenShader, &missShader, &closestHitShader};
+	rttvk::Shader shadowMissShader = rttvk::Shader();
+	std::vector<rttvk::Shader*> rayTracingShaders = { &rayGenShader, &missShader, &shadowMissShader, &closestHitShader};
 	VkDescriptorSetLayoutBinding imageInput{ 0,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1 };
 	VkDescriptorSetLayoutBinding tlasBinding{ 1,VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR,1};
 	VkDescriptorSetLayoutBinding resBinding{ 2,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1 };
@@ -163,8 +168,9 @@ private:
 	VkStridedDeviceAddressRegionKHR rmissRegion = {};
 	VkStridedDeviceAddressRegionKHR rchitRegion = {};
 
-	uint32_t align(uint32_t a, uint32_t x) {
-		return uint32_t((a + (uint32_t(x) - 1)) & ~uint32_t(x - 1));
+	uint32_t align(uint32_t value, uint32_t alignment)
+	{
+		return (value + alignment - 1) & ~(alignment - 1);
 	}
 
 	rttvk::RTPipeline rtPipeline = rttvk::RTPipeline(&logicalDevice, rayTracingShaders, rtSetLayout);
@@ -177,5 +183,5 @@ private:
 
 
 	MeshData cube = MeshData();
-	OBJLoader cubeLoader = OBJLoader("Content/Meshes/spot.obj", &cube);
+	OBJLoader cubeLoader = OBJLoader("Content/Meshes/sponza.obj", &cube);
 };
