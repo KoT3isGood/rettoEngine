@@ -19,8 +19,9 @@ void main() {
     
     vec2 texCoords = (coords-0.5)/resolution.resData.yx*resolution.resData.x;
 
-    //vec3 origin = vec3(-11.4,9.2,4.2);
-    vec3 origin = vec3(-10,0,2);
+    vec3 origin = vec3(-11.4,9.2,4.2);
+    //vec3 origin = vec3(-10,0,2);
+    //vec3 origin = vec3(-4,0,0);
 
     vec3 direction = normalize(vec3(1,-texCoords));
 

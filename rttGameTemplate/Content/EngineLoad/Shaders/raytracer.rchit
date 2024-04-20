@@ -62,7 +62,7 @@ void main() {
     uvec2 pixelCoord = gl_LaunchIDEXT.xy;
     uint pixelIndex = uint(pixelCoord.y*resolution.resData.x+pixelCoord.x);
 
-    vec3 sunSampleCoords = normalize(vec3(3,-3,10)+(vec3(RandomValue(pixelIndex),RandomValue(pixelIndex),RandomValue(pixelIndex)))*2-1);
+    vec3 sunSampleCoords = normalize(vec3(3,0,10)+(vec3(RandomValue(pixelIndex),RandomValue(pixelIndex),RandomValue(pixelIndex)))*2-1);
 
     shadow = false;
     traceRayEXT(topLevelAS, // acceleration structure
@@ -100,7 +100,7 @@ void main() {
     } else {
       vec3 sunColor = vec3(0,0,0);
       if (shadowClone) {
-        sunColor=vec3(1,1,1);
+        sunColor=vec3(1,1,1)*dot(normal,sunSampleCoords);
       }
       prd.color = sunColor;
       return;
@@ -119,7 +119,7 @@ void main() {
 
     vec3 sunColor = vec3(0,0,0);
     if (shadowClone) {
-      sunColor=vec3(1,1,1)*dot(normal,sunSampleCoords)*2;
+      sunColor=vec3(1,1,1)*dot(normal,sunSampleCoords);
     }
     prd.color = (prd.color*dot(normal,giDir)+sunColor);
 }

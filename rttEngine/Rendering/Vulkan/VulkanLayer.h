@@ -183,5 +183,5 @@ private:
 
 
 	MeshData cube = MeshData();
-	OBJLoader cubeLoader = OBJLoader("Content/Meshes/sponza.obj", &cube);
+	OBJLoader cubeLoader = OBJLoader("Content/Meshes/BistroExterior.obj", &cube);
 };
