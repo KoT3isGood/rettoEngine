@@ -107,8 +107,8 @@ namespace rttvk {
 		vkDestroyAccelerationStructureKHR(device->GetDevice(), blas, nullptr);
 
 		vertexBuffer.Destroy();
-		indexBuffer.Destroy();
-		acBuffer.Destroy();
+			indexBuffer.Destroy();
+			acBuffer.Destroy();
 		scratchBuffer.Destroy();
 	}
 	void BLAS::Build()

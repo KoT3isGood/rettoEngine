@@ -62,7 +62,7 @@ private:
 		VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 
 		},{
-			"VK_LAYER_KHRONOS_validation"
+			//"VK_LAYER_KHRONOS_validation"
 		});
 
 	rttvk::DebugMessenger debugMessenger = rttvk::DebugMessenger(&instance);

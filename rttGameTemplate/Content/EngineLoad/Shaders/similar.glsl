@@ -11,6 +11,7 @@ struct hitPayload
   // HitPos
   vec3 hitPos;
   float depth;
+  int reflectionCounted;
   // Data About triangle
   vec2 uv;
   int instance;

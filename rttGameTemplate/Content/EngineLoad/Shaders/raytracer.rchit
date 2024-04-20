@@ -25,12 +25,11 @@ uint rand(inout uint state)
 
 float RandomValue(inout uint state)
 {
-		return rand(state) / 4294967295.0; // 2^32 - 1
+		return rand(state) * 2.3283064*pow(10,-10); // 2^32 - 1
 }
 
 float RandomValueNormalDistribution(inout uint state)
 {
-		// Thanks to https://stackoverflow.com/a/6178290
 		float theta = 2 * 3.1415926 * RandomValue(state);
 		float rho = sqrt(-2 * log(RandomValue(state)));
 		return rho * cos(theta);
@@ -63,7 +62,7 @@ void main() {
     uvec2 pixelCoord = gl_LaunchIDEXT.xy;
     uint pixelIndex = uint(pixelCoord.y*resolution.resData.x+pixelCoord.x);
 
-    vec3 sunSampleCoords = normalize(vec3(-3,-3,10)+RandomDirection(pixelIndex));
+    vec3 sunSampleCoords = normalize(vec3(3,-3,10)+(vec3(RandomValue(pixelIndex),RandomValue(pixelIndex),RandomValue(pixelIndex)))*2-1);
 
     shadow = false;
     traceRayEXT(topLevelAS, // acceleration structure
@@ -76,13 +75,51 @@ void main() {
           0.001,           // ray min range
           sunSampleCoords,  // ray direction
           10000,           // ray max range
-          0               // payload (location = 0)
+          1               // payload (location = 0)
     );
+    bool shadowClone = shadow;
+    prd.color = vec3(0);
+    prd.reflectionCounted++;
+    
+    vec3 giDir = normalize(vec3(RandomValue(pixelIndex),RandomValue(pixelIndex),RandomValue(pixelIndex))*2-1);
 
-    if (shadow) {
-    prd.color = vec3(1.0)*dot(sunSampleCoords,normal)*2;
+    prd.didHit = false;
+    if (prd.reflectionCounted<2) {      
+      traceRayEXT(topLevelAS, // acceleration structure
+          gl_RayFlagsOpaqueEXT,       // rayFlags
+          0xFF,           // cullMask
+          0,              // sbtRecordOffset
+          0,              // sbtRecordStride
+          0,              // missIndex
+          worldPos,     // ray origin
+          0.001,           // ray min range
+          giDir,  // ray direction
+          10000,           // ray max range
+          0               // payload (location = 0)
+      );
     } else {
-      prd.color = vec3(0);
+      vec3 sunColor = vec3(0,0,0);
+      if (shadowClone) {
+        sunColor=vec3(1,1,1);
+      }
+      prd.color = sunColor;
+      return;
     }
+    prd.reflectionCounted--;
 
+    
+    
+
+
+   
+
+    prd.didHit = true;
+    prd.hitPos = worldPos;
+    prd.depth = gl_HitTEXT-0.001;
+
+    vec3 sunColor = vec3(0,0,0);
+    if (shadowClone) {
+      sunColor=vec3(1,1,1)*dot(normal,sunSampleCoords)*2;
+    }
+    prd.color = (prd.color*dot(normal,giDir)+sunColor);
 }
