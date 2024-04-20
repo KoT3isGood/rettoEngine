@@ -5,3 +5,5 @@
 Build/
 BuildTrash/
 /rttAppTemlate/x64/Debug
+/rttGameTemplate/Content/Meshes/BistroExterior.mtl
+/rttGameTemplate/Content/Meshes/BistroExterior.obj
