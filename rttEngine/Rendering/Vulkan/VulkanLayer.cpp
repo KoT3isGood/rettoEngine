@@ -124,11 +124,15 @@ VulkanLayer::VulkanLayer()
 	poolSizeRTRes.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	poolSizeRTRes.descriptorCount = 1;
 
-	VkDescriptorPoolSize poolSizeRTs[] = { poolSizeRT,poolSizeRT2,poolSizeRTRes };
+	VkDescriptorPoolSize poolSizeRTNoise = {};
+	poolSizeRTNoise.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizeRTNoise.descriptorCount = 1;
+
+	VkDescriptorPoolSize poolSizeRTs[] = { poolSizeRT,poolSizeRT2,poolSizeRTRes,poolSizeRTNoise };
 
 	VkDescriptorPoolCreateInfo poolCreateInfoRT = {};
 	poolCreateInfoRT.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolCreateInfoRT.poolSizeCount = 3;
+	poolCreateInfoRT.poolSizeCount = 4;
 	poolCreateInfoRT.pPoolSizes = poolSizeRTs;
 	poolCreateInfoRT.maxSets = 1;
 
@@ -217,7 +221,7 @@ VulkanLayer::VulkanLayer()
 	blas.Build();
 	tlas.Build();
 
-
+	blueNoise.Create();
 	
 }
 
@@ -225,13 +229,14 @@ VulkanLayer::~VulkanLayer()
 {
 
 
-
 	vkDeviceWaitIdle(logicalDevice.GetDevice());
+
+	blueNoise.Destroy();
 
 	tlas.Destroy();
 	blas.Destroy();
 
-
+	shadowMissShader.Destroy();
 	rayGenShader.Destroy();
 	missShader.Destroy();
 	closestHitShader.Destroy();
@@ -342,13 +347,26 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsRes.descriptorCount = 1;
 	wdsRes.pBufferInfo = &resolutionInfo;
 
+	VkDescriptorImageInfo noiseImageInfo;
+	noiseImageInfo.imageView = blueNoise.imageView.GetImageView();
+	noiseImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	noiseImageInfo.sampler = blueNoise.textureSampler;
+
+	VkWriteDescriptorSet wdsNoise = {};
+	wdsNoise.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wdsNoise.dstSet = descSetRT;
+	wdsNoise.dstBinding = 3;
+	wdsNoise.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	wdsNoise.descriptorCount = 1;
+	wdsNoise.pImageInfo = &noiseImageInfo;
 
 
-	VkWriteDescriptorSet wdss[]={ wds ,wdsA, wdsRes };
+
+	VkWriteDescriptorSet wdss[]={ wds ,wdsA, wdsRes, wdsNoise};
 
 	
 
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 3, wdss, 0, nullptr);
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 4, wdss, 0, nullptr);
 
 
 
@@ -358,9 +376,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
-
 	tlas.Update();
-
 	ChangeImageLayout(images[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rtPipeline.GetPipeline());
 	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rtPipeline.GetPipelineLayout(), 0, 1, &descSetRT, 0, nullptr);

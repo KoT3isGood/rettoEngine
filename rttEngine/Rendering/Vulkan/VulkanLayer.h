@@ -38,6 +38,7 @@ struct ProcessInfo;
 #include "Modules\RayTracing\RTPipeline.h"
 #include "Modules\RayTracing\BLAS.h"
 #include "Modules\RayTracing\TLAS.h"
+#include "Modules\Texture.h"
 
 
 #include "Utils\MeshLoader\MeshData.h"
@@ -153,7 +154,8 @@ private:
 	VkDescriptorSetLayoutBinding imageInput{ 0,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1 };
 	VkDescriptorSetLayoutBinding tlasBinding{ 1,VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR,1};
 	VkDescriptorSetLayoutBinding resBinding{ 2,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1 };
-	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInput, tlasBinding, resBinding };
+	VkDescriptorSetLayoutBinding noiseBinding{ 3,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,1 };
+	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInput, tlasBinding, resBinding, noiseBinding };
 
 	PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR;
 
@@ -180,8 +182,8 @@ private:
 	rttvk::BLAS blas = rttvk::BLAS(&logicalDevice,&cube);
 	std::vector<rttvk::BLAS*> blases = {&blas};
 	rttvk::TLAS tlas = rttvk::TLAS(&logicalDevice,&meshes, &blases);
-
+	rttvk::Texture blueNoise = rttvk::Texture(&logicalDevice,"Content/Textures/bluenoise256.png");
 
 	MeshData cube = MeshData();
-	OBJLoader cubeLoader = OBJLoader("Content/Meshes/BistroExterior.obj", &cube);
+	OBJLoader cubeLoader = OBJLoader("Content/Meshes/sponza.obj", &cube);
 };

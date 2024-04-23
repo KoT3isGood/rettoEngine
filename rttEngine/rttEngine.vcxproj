@@ -30,7 +30,9 @@
     <ClInclude Include="Rendering\Vulkan\Modules\SurfaceKHR.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\Swapchain.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\SyncGPU.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\Texture.h" />
     <ClInclude Include="Rendering\Vulkan\VulkanLayer.h" />
+    <ClInclude Include="ThirdParty\stb_image.h" />
     <ClInclude Include="Utils\Application\AppGeneration.h" />
     <ClInclude Include="Utils\Application\AppInfo.h" />
     <ClInclude Include="Utils\Application\ProcessInfo.h" />
@@ -64,6 +66,7 @@
     <ClCompile Include="Rendering\Vulkan\Modules\SurfaceKHR.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\Swapchain.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\SyncGPU.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\Texture.cpp" />
     <ClCompile Include="Rendering\Vulkan\VulkanLayer.cpp" />
     <ClCompile Include="Utils\Application\ProcessInfo.cpp" />
     <ClCompile Include="Utils\Layers\Layer.cpp" />
@@ -128,7 +131,7 @@
       <PreprocessorDefinitions>Win64;ToolChain;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)ThirdParty\Vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)ThirdParty\Vulkan\Include;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <SmallerTypeCheck />
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -151,7 +154,7 @@
       <PreprocessorDefinitions>Win64;%(PreprocessorDefinitions);Win64</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)ThirdParty\Vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)ThirdParty\Vulkan\Include;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>

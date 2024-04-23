@@ -14,34 +14,10 @@ layout (binding = 2) uniform res {
   vec2 resData;
 } resolution;
 
-
-uint rand(inout uint state)
-{
-    state = state * 747796405 + 2891336453;
-    uint result = ((state >> ((state >> 28) + 4)) ^ state) * 277803737;
-		result = (result >> 22) ^ result;
-		return result;
-}
-
-float RandomValue(inout uint state)
-{
-		return rand(state) * 2.3283064*pow(10,-10); // 2^32 - 1
-}
-
-float RandomValueNormalDistribution(inout uint state)
-{
-		float theta = 2 * 3.1415926 * RandomValue(state);
-		float rho = sqrt(-2 * log(RandomValue(state)));
-		return rho * cos(theta);
-}
-
-vec3 RandomDirection(inout uint state)
-{
-    float x = RandomValueNormalDistribution(state);
-    float y = RandomValueNormalDistribution(state);
-    float z = RandomValueNormalDistribution(state);
-    return normalize(vec3(x, y, z));
-}
+layout(binding = 3) uniform sampler2D blueNoiseTexture;
+vec3 sampleNoise(vec2 coords) {
+  return texture(blueNoiseTexture,coords*resolution.resData.xy/vec2(256)).xyz*2-1;
+};
 
 void main() {
     vec3 vertex1 = gl_HitTriangleVertexPositionsEXT[0];
@@ -56,13 +32,9 @@ void main() {
     vec2 coords = vec2(0.0, 0.0);
     coords.r = float(gl_LaunchIDEXT.x) / float(gl_LaunchSizeEXT.x);
     coords.g = float(gl_LaunchIDEXT.y) / float(gl_LaunchSizeEXT.y);
-    
-    vec2 texCoords = (coords-0.5)/resolution.resData.yx*resolution.resData.x;
 
-    uvec2 pixelCoord = gl_LaunchIDEXT.xy;
-    uint pixelIndex = uint(pixelCoord.y*resolution.resData.x+pixelCoord.x);
 
-    vec3 sunSampleCoords = normalize(vec3(3,0,10)+(vec3(RandomValue(pixelIndex),RandomValue(pixelIndex),RandomValue(pixelIndex)))*2-1);
+    vec3 sunSampleCoords = normalize(vec3(3,0,10)+sampleNoise(coords));
 
     shadow = false;
     traceRayEXT(topLevelAS, // acceleration structure
@@ -81,31 +53,8 @@ void main() {
     prd.color = vec3(0);
     prd.reflectionCounted++;
     
-    vec3 giDir = normalize(vec3(RandomValue(pixelIndex),RandomValue(pixelIndex),RandomValue(pixelIndex))*2-1);
+    
 
-    prd.didHit = false;
-    if (prd.reflectionCounted<2) {      
-      traceRayEXT(topLevelAS, // acceleration structure
-          gl_RayFlagsOpaqueEXT,       // rayFlags
-          0xFF,           // cullMask
-          0,              // sbtRecordOffset
-          0,              // sbtRecordStride
-          0,              // missIndex
-          worldPos,     // ray origin
-          0.001,           // ray min range
-          giDir,  // ray direction
-          10000,           // ray max range
-          0               // payload (location = 0)
-      );
-    } else {
-      vec3 sunColor = vec3(0,0,0);
-      if (shadowClone) {
-        sunColor=vec3(1,1,1)*dot(normal,sunSampleCoords);
-      }
-      prd.color = sunColor;
-      return;
-    }
-    prd.reflectionCounted--;
 
     
     
@@ -121,5 +70,6 @@ void main() {
     if (shadowClone) {
       sunColor=vec3(1,1,1)*dot(normal,sunSampleCoords);
     }
-    prd.color = (prd.color*dot(normal,giDir)+sunColor);
+    prd.color = sunColor;
+    prd.normal = normal;
 }

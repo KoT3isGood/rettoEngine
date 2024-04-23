@@ -17,9 +17,13 @@ struct hitPayload
   int instance;
   int triangle;
   vec3 color;
+
+  vec3 normal;
+  //Origin and direction
 };
 
 struct ObjectData {
   uint64_t verticesBufferAddr;
   uint64_t indexBufferAddr;
 };
+

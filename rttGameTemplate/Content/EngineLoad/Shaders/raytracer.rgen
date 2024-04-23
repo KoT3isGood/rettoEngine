@@ -8,8 +8,13 @@ layout (binding = 2) uniform res {
   vec2 resData;
 } resolution;
 
+
 layout(location = 0) rayPayloadEXT hitPayload prd;
 
+layout(binding = 3) uniform sampler2D blueNoiseTexture;
+vec3 sampleNoise(vec2 coords) {
+  return texture(blueNoiseTexture,coords*resolution.resData.xy/vec2(256)).xyz*2-1;
+};
 
 void main() {
 
@@ -19,14 +24,28 @@ void main() {
     
     vec2 texCoords = (coords-0.5)/resolution.resData.yx*resolution.resData.x;
 
-    vec3 origin = vec3(-11.4,9.2,4.2);
-    //vec3 origin = vec3(-10,0,2);
+    //vec3 origin = vec3(-11.4,9.2,4.2);
+    vec3 origin = vec3(-10,0,2);
     //vec3 origin = vec3(-4,0,0);
+
+    uvec2 pixelCoord = gl_LaunchIDEXT.xy;
+    uint pixelIndex = uint(pixelCoord.y*resolution.resData.x+pixelCoord.x);
 
     vec3 direction = normalize(vec3(1,-texCoords));
 
-    prd.reflectionCounted=0;
-    traceRayEXT(topLevelAS, // acceleration structure
+    vec3 color = vec3(0.0, 0.0, 0.0);
+
+    prd.didHit = true;
+    prd.color = vec3(0.0);
+    for (int i = 0;i<2;i++) {
+      if (!prd.didHit) {
+        break;
+      }
+      if (i>0) {
+        origin = prd.hitPos;
+        direction = normalize(sampleNoise(coords));
+      }
+      traceRayEXT(topLevelAS, // acceleration structure
           gl_RayFlagsOpaqueEXT,       // rayFlags
           0xFF,           // cullMask
           0,              // sbtRecordOffset
@@ -37,6 +56,8 @@ void main() {
           direction,  // ray direction
           10000,           // ray max range
           0               // payload (location = 0)
-    );
-     imageStore(colorBuffer, ivec2(gl_LaunchIDEXT.xy), vec4(prd.color, 0.0));
+      );
+      color+=prd.color;
+    }
+    imageStore(colorBuffer, ivec2(gl_LaunchIDEXT.xy), vec4(color, 0.0));
 } 

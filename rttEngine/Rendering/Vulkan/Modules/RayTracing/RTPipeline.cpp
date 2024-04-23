@@ -77,7 +77,7 @@ namespace rttvk {
 
 		createInfo.groupCount = groups.size();
 		createInfo.pGroups = groups.data();
-		createInfo.maxPipelineRayRecursionDepth = 2;
+		createInfo.maxPipelineRayRecursionDepth = 1;
 		createInfo.layout = layout;
 
 		VK_CREATE_VALIDATION(vkCreateRayTracingPipelinesKHR(device->GetDevice(),nullptr,nullptr,1,&createInfo,nullptr,&pipeline));
