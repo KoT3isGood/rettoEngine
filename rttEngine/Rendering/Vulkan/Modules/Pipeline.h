@@ -6,13 +6,14 @@
 namespace rttvk {
 	class Pipeline:public Module {
 	public:
-		Pipeline(Shader* shader, LogicalDevice* device);
+		Pipeline(Shader* shader, LogicalDevice* device, std::vector<VkDescriptorSetLayoutBinding> descSetlayout);
 		virtual void Create() override;
 		virtual void Destroy() override;
 		VkPipeline GetPipeline();
 		VkDescriptorSetLayout GetDescriptorLayout();
 		VkPipelineLayout GetPipelineLayout();
 	private:
+		std::vector<VkDescriptorSetLayoutBinding> descSetlayout;
 		Shader* shader;
 		LogicalDevice* device;
 

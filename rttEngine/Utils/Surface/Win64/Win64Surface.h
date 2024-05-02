@@ -14,6 +14,7 @@ namespace rttvk {
 class VulkanLayer;
 #include "Rendering\Vulkan\VulkanLayer.h"
 #include "Objects\Level.h"
+#include "Utils\rttGUI\rttGUI.h"
 
 /*
 * Win32 Window Generator

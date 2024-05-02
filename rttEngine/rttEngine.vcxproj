@@ -36,15 +36,18 @@
     <ClInclude Include="Utils\Application\AppGeneration.h" />
     <ClInclude Include="Utils\Application\AppInfo.h" />
     <ClInclude Include="Utils\Application\ProcessInfo.h" />
+    <ClInclude Include="Utils\IO\InputOutput.h" />
     <ClInclude Include="Utils\Layers\Layer.h" />
     <ClInclude Include="Utils\Layers\RenderingLayer.h" />
     <ClInclude Include="Utils\Layers\Sublayer.h" />
     <ClInclude Include="Utils\Logging\Logger.h" />
     <ClInclude Include="Utils\MeshLoader\MeshData.h" />
     <ClInclude Include="Utils\MeshLoader\Obj\ObjLoader.h" />
+    <ClInclude Include="Utils\rttGUI\rttGUI.h" />
     <ClInclude Include="Utils\Surface\Surface.h" />
     <ClInclude Include="Utils\Surface\Win64\Win64Surface.h" />
     <ClInclude Include="Utils\Tokenizer\Tokenizer.h" />
+    <ClInclude Include="Utils\VeryCoolMath\Math.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Objects\Actor.cpp" />
@@ -69,12 +72,14 @@
     <ClCompile Include="Rendering\Vulkan\Modules\Texture.cpp" />
     <ClCompile Include="Rendering\Vulkan\VulkanLayer.cpp" />
     <ClCompile Include="Utils\Application\ProcessInfo.cpp" />
+    <ClCompile Include="Utils\IO\InputOutput.cpp" />
     <ClCompile Include="Utils\Layers\Layer.cpp" />
     <ClCompile Include="Utils\Layers\RenderingLayer.cpp" />
     <ClCompile Include="Utils\Layers\Sublayer.cpp" />
     <ClCompile Include="Utils\Logging\Logger.cpp" />
     <ClCompile Include="Utils\MeshLoader\MeshData.cpp" />
     <ClCompile Include="Utils\MeshLoader\Obj\ObjLoader.cpp" />
+    <ClCompile Include="Utils\rttGUI\rttGUI.cpp" />
     <ClCompile Include="Utils\Surface\Surface.cpp" />
     <ClCompile Include="Utils\Surface\Win64\Win64Surface.cpp" />
     <ClCompile Include="Utils\Tokenizer\Tokenizer.cpp" />
@@ -131,7 +136,7 @@
       <PreprocessorDefinitions>Win64;ToolChain;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)ThirdParty\Vulkan\Include;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);%VULKAN_SDK%/Include;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <SmallerTypeCheck />
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -141,7 +146,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\Vulkan\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%VULKAN_SDK%/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
@@ -154,7 +159,7 @@
       <PreprocessorDefinitions>Win64;%(PreprocessorDefinitions);Win64</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)ThirdParty\Vulkan\Include;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);%VULKAN_SDK%/Include;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -165,7 +170,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\Vulkan\Libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%VULKAN_SDK%/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>

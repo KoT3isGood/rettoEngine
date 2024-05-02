@@ -1,36 +1,19 @@
 #include "Pipeline.h"
 
 namespace rttvk{
-	Pipeline::Pipeline(Shader* shader, LogicalDevice* device)
+	Pipeline::Pipeline(Shader* shader, LogicalDevice* device, std::vector<VkDescriptorSetLayoutBinding> descSetlayout)
 	{
 		
 		this->shader = shader;
 		this->device = device;
+		this->descSetlayout = descSetlayout;
 	}
 	void Pipeline::Create()
 	{
-		std::vector<VkDescriptorSetLayoutBinding> bindings;
-
-		VkDescriptorSetLayoutBinding binding{};
-		binding.binding = 0;
-		binding.descriptorCount = 1;
-		binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-		binding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-
-		VkDescriptorSetLayoutBinding binding2{};
-		binding2.binding = 1;
-		binding2.descriptorCount = 1;
-		binding2.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		binding2.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-
-
-		bindings.push_back(binding);
-		bindings.push_back(binding2);
-
 		VkDescriptorSetLayoutCreateInfo descriptorInfo{};
 		descriptorInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorInfo.bindingCount = bindings.size();
-		descriptorInfo.pBindings = bindings.data();
+		descriptorInfo.bindingCount = descSetlayout.size();
+		descriptorInfo.pBindings = descSetlayout.data();
 
 		VK_CREATE_VALIDATION(vkCreateDescriptorSetLayout(device->GetDevice(), &descriptorInfo, nullptr, &descriptor));
 
@@ -42,9 +25,6 @@ namespace rttvk{
 
 
 
-		VkPipelineCacheCreateInfo cacheCreateInfo{};
-		cacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-		VK_CREATE_VALIDATION(vkCreatePipelineCache(device->GetDevice(), &cacheCreateInfo, nullptr, &cache));
 
 		VkComputePipelineCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -52,13 +32,12 @@ namespace rttvk{
 		createInfo.stage = shader->shaderStageInfo;
 
 
-		VK_CREATE_VALIDATION(vkCreateComputePipelines(device->GetDevice(), cache, 1, &createInfo, nullptr, &pipeline));
+		VK_CREATE_VALIDATION(vkCreateComputePipelines(device->GetDevice(), nullptr, 1, &createInfo, nullptr, &pipeline));
 	}
 	void Pipeline::Destroy()
 	{
 		
 		vkDestroyPipeline(device->GetDevice(), pipeline, nullptr);
-		vkDestroyPipelineCache(device->GetDevice(), cache, nullptr);
 		vkDestroyPipelineLayout(device->GetDevice(), layout, nullptr);
 		vkDestroyDescriptorSetLayout(device->GetDevice(), descriptor, nullptr);
 	}

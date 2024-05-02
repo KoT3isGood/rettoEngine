@@ -1,16 +1,82 @@
 #version 460
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout (binding = 0, rgba8) uniform image2D colorBuffer;
-// layout (binding = 1) uniform res {
-//     vec2 resolution;
-// };
+layout (binding = 1) uniform res {
+     vec2 resolution;
+};
+layout (binding = 2) uniform amountHierarchy{
+     uint hierarchySize;
+};
+
+layout (binding = 3) readonly buffer hierarchy{
+     uint tree[];
+} hierarchyBuffer;
+layout(binding = 4) uniform sampler2D fontTexture;
+
+bool checkIfInAABB(vec2 texcoord, vec4 aabb) {
+    return texcoord.x>=aabb.x&&texcoord.y>=aabb.y&&texcoord.x<=aabb.z&&texcoord.y<=aabb.w;
+}
+vec2 transformUV(vec2 old, vec2 minUV, vec2 maxUV) {
+    return old*(maxUV-minUV)+minUV;
+};
 
 void main() {
     
-    ivec2 screen_pos = ivec2(gl_GlobalInvocationID.x,gl_GlobalInvocationID.y);
+    vec2 texCoord = vec2(0.0, 0.0);
+    ivec2 screen_pos = ivec2(gl_GlobalInvocationID.xy);
+	
+    texCoord.x = float(screen_pos.x-0.5)/(gl_NumWorkGroups.x*gl_WorkGroupSize.x);
+    texCoord.y = float(screen_pos.y-0.5)/(gl_NumWorkGroups.y*gl_WorkGroupSize.y);
 
-    
-    
+    bool shouldDraw = false;
+    vec3 color = vec3(0.0);
+    uint currentElement = 0;
+    for(uint i = 0;i<hierarchySize;i++) {
+        uint type = hierarchyBuffer.tree[currentElement];
+        // Every field would have text
+        uint lenght = hierarchyBuffer.tree[currentElement+1];
+        uint lenght4b = uint(ceil(hierarchyBuffer.tree[currentElement+1]/4.0));
+        // Every field would have size
+        ivec2 minSize = ivec2(hierarchyBuffer.tree[currentElement+2+lenght4b],hierarchyBuffer.tree[currentElement+3+lenght4b]);
+        ivec2 maxSize = ivec2(hierarchyBuffer.tree[currentElement+4+lenght4b],hierarchyBuffer.tree[currentElement+5+lenght4b]);
+        
+        if (checkIfInAABB(texCoord*resolution,vec4(minSize,maxSize))) {
+            color = vec3(1.0);
+            if (type == 1) {
+                
+                //color = vec3(0.1);
+            } 
+            // this code slows down an entire app
+            if (type == 2 || type == 3) {
+                shouldDraw = true;
+                color = vec3(0.1);
+                if (type == 2) {
+                    color = vec3(0.5,0.5333,0.7333);
+                }
+                for (int h = 0;h<lenght;h++) {
+                    vec2 letterMin = minSize+2+vec2(h*16,0);
+                    vec2 letterMax = minSize+18+vec2(h*16,0);
+                    if(checkIfInAABB(texCoord*resolution,vec4(letterMin,letterMax))) {
+                        uint letterRow = uint(floor(h/4.0));
+                        uint letterColumn = h%4;
+                        uint letterValue = (hierarchyBuffer.tree[currentElement+2+letterRow]>>(3-letterColumn)*8) & (0x000000ff);
+                        uint letterX = (letterValue & 0xf0)>>4;
+                        uint letterY = (letterValue & 0x0f);
+                        vec2 letterTexCoord = (texCoord*resolution-letterMin)/(letterMax-letterMin);
+                        letterTexCoord = (letterTexCoord+vec2(letterY,letterX))/16;
+                        if (texture(fontTexture,letterTexCoord).w>0.5) {
+                            color = vec3(1.0);
+                        }
+                    };
+                };
+            }
+            
+            
+        }
+        currentElement+=6+lenght4b;
+    }
+    if (shouldDraw) {
+        imageStore(colorBuffer,screen_pos, vec4(color,1.0));
+    }
 
-    imageStore(colorBuffer,screen_pos, vec4(1.0,0.0,0.0,1.0));
 }

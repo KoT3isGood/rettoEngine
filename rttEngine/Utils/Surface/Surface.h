@@ -24,4 +24,6 @@ public:
 
 	float resolutionX = 0;
 	float resolutionY = 0;
+	float positionX = 0;
+	float positionY = 0;
 };

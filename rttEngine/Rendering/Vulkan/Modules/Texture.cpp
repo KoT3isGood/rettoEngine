@@ -98,7 +98,7 @@ namespace rttvk {
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.srcAccessMask = VK_ACCESS_NONE_KHR;
-		barrier.dstAccessMask = VK_ACCESS_NONE_KHR;
+		barrier.dstAccessMask = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		barrier.image = textureImage;
 		barrier.subresourceRange = access;
 		barrier.pNext = nullptr;
@@ -131,7 +131,7 @@ namespace rttvk {
 			&region
 		);
 
-		//vkCmdPipelineBarrier(cmd.GetBuffer(), VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		vkCmdPipelineBarrier(cmd.GetBuffer(), VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 		vkEndCommandBuffer(cmd.GetBuffer());
 
@@ -145,6 +145,8 @@ namespace rttvk {
 
 		cmd.Destroy();
 		cmdPool.Destroy();
+
+		
 		
 	}
 	void Texture::Destroy()
@@ -153,6 +155,7 @@ namespace rttvk {
 		imageView.Destroy();
 		vkFreeMemory(device->GetDevice(), textureImageMemory, nullptr);
 		vkDestroyImage(device->GetDevice(), textureImage, nullptr);
+		vkDestroySampler(device->GetDevice(), textureSampler, nullptr);
 	}
 	uint32_t Texture::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 	{

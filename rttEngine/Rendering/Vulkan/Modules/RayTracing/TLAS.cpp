@@ -55,7 +55,7 @@ namespace rttvk {
 		geometryInfo.pGeometries = &asGeom;
 		geometryInfo.geometryCount = 1;
 
-
+		geometryInfo.dstAccelerationStructure = VK_NULL_HANDLE;
 
 
 
@@ -131,11 +131,11 @@ namespace rttvk {
 		cmd.Destroy();
 		cmdPool.Destroy();
 	}
-	void TLAS::Update()
+	void TLAS::Update(CommandBuffer* cmd)
 	{
 		VK_FUNCTION(vkCmdBuildAccelerationStructuresKHR, device->GetDevice());
 		const VkAccelerationStructureBuildRangeInfoKHR* pBuildOffsetInfo = &offset;
-		//vkCmdBuildAccelerationStructuresKHR(cmd.GetBuffer(), 1, &geometryInfo, &pBuildOffsetInfo);
+		vkCmdBuildAccelerationStructuresKHR(cmd->GetBuffer(), 1, &geometryInfo, &pBuildOffsetInfo);
 	}
 	VkAccelerationStructureKHR* TLAS::GetAccelerationStructure()
 	{

@@ -39,6 +39,7 @@ struct ProcessInfo;
 #include "Modules\RayTracing\BLAS.h"
 #include "Modules\RayTracing\TLAS.h"
 #include "Modules\Texture.h"
+#include "Utils\VeryCoolMath\Math.h"
 
 
 #include "Utils\MeshLoader\MeshData.h"
@@ -54,6 +55,7 @@ public:
 	virtual void Draw() override;
 
 	float resolution[2];
+	float usablePosition[2];
 private:
 	rttvk::Instance instance = rttvk::Instance({
 		VK_KHR_SURFACE_EXTENSION_NAME,
@@ -63,7 +65,8 @@ private:
 		VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 
 		},{
-			//"VK_LAYER_KHRONOS_validation"
+			//"VK_LAYER_LUNARG_api_dump",
+			"VK_LAYER_KHRONOS_validation"
 		});
 
 	rttvk::DebugMessenger debugMessenger = rttvk::DebugMessenger(&instance);
@@ -90,7 +93,13 @@ private:
 	void Resize();
 
 	rttvk::Shader computeShader = rttvk::Shader();
-	rttvk::Pipeline pipeline = rttvk::Pipeline(&computeShader,&logicalDevice);
+	VkDescriptorSetLayoutBinding imageInput{ 0,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
+	VkDescriptorSetLayoutBinding resBinding{ 1,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1,VK_SHADER_STAGE_COMPUTE_BIT };
+	VkDescriptorSetLayoutBinding hierarchyCountBinding{ 2,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1,VK_SHADER_STAGE_COMPUTE_BIT };
+	VkDescriptorSetLayoutBinding hierarchyBinding{ 3,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1,VK_SHADER_STAGE_COMPUTE_BIT };
+	VkDescriptorSetLayoutBinding fontBinding{ 4,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,1,VK_SHADER_STAGE_COMPUTE_BIT };
+	std::vector<VkDescriptorSetLayoutBinding> setLayout = { imageInput, resBinding,hierarchyCountBinding,hierarchyBinding,fontBinding };
+	rttvk::Pipeline pipeline = rttvk::Pipeline(&computeShader,&logicalDevice, setLayout);
 
 	rttvk::CommandPool commandPool = rttvk::CommandPool(&logicalDevice);
 	rttvk::CommandBuffer commandBuffer = rttvk::CommandBuffer(&logicalDevice, &commandPool);
@@ -104,10 +113,10 @@ private:
 
 
 	rttvk::Buffer buffer = rttvk::Buffer(&logicalDevice,8,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+	rttvk::Buffer bufferHierarchyAmount = rttvk::Buffer(&logicalDevice, 4, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+	rttvk::Buffer cameraPositionBuffer = rttvk::Buffer(&logicalDevice, 16, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
-	
-
-
+	float pos[4] = { -5,0,0,0 };
 
 
 
@@ -151,11 +160,12 @@ private:
 	rttvk::Shader closestHitShader = rttvk::Shader();
 	rttvk::Shader shadowMissShader = rttvk::Shader();
 	std::vector<rttvk::Shader*> rayTracingShaders = { &rayGenShader, &missShader, &shadowMissShader, &closestHitShader};
-	VkDescriptorSetLayoutBinding imageInput{ 0,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1 };
+	VkDescriptorSetLayoutBinding imageInputRT {0,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1 };
 	VkDescriptorSetLayoutBinding tlasBinding{ 1,VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR,1};
-	VkDescriptorSetLayoutBinding resBinding{ 2,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1 };
+	VkDescriptorSetLayoutBinding resBindingRT{ 2,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1 };
 	VkDescriptorSetLayoutBinding noiseBinding{ 3,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,1 };
-	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInput, tlasBinding, resBinding, noiseBinding };
+	VkDescriptorSetLayoutBinding cameraPosBindingRT{ 4,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1 };
+	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInputRT, tlasBinding, resBindingRT, noiseBinding, cameraPosBindingRT };
 
 	PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR;
 
@@ -186,4 +196,9 @@ private:
 
 	MeshData cube = MeshData();
 	OBJLoader cubeLoader = OBJLoader("Content/Meshes/sponza.obj", &cube);
+
+private:
+	// rttGUI
+	rttvk::Texture font = rttvk::Texture(&logicalDevice, "Content/Textures/rttguifont.png");
+	rttvk::Buffer rttGUIDrawHierarchy = rttvk::Buffer();
 };

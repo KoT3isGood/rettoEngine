@@ -75,8 +75,7 @@ void Win64Surface::StartUpdateLoop()
 {
 	MSG msg;
 	while (shouldRun) {
-
-		
+		rttGUI()->NewFrame();
 
 		currentTime = getRunningTime();
 		float delta = currentTime - previousTime;
@@ -85,7 +84,7 @@ void Win64Surface::StartUpdateLoop()
 		GetCurrentLevel()->Tick(delta);
 
 		timeToTitleUpdate += delta;
-		if (timeToTitleUpdate>=1.0f ) {
+		/*if (timeToTitleUpdate>=1.0f ) {
 			timeToTitleUpdate = 0;
 			float fps = 1 / delta;
 			std::string tmp = std::to_string(fps);
@@ -94,7 +93,13 @@ void Win64Surface::StartUpdateLoop()
 			}
 
 			SetWindowTextA(Handle, tmp.c_str());
-		}
+		}*/
+
+		RECT rMyRect;
+		GetWindowRect(Handle, (LPRECT)&rMyRect);
+
+		positionX = rMyRect.top;
+		positionY = rMyRect.left;
 
 		vkLayer->resolution[0] = resolutionX;
 		vkLayer->resolution[1] = resolutionY;
@@ -105,7 +110,8 @@ void Win64Surface::StartUpdateLoop()
 			DispatchMessageW(&msg);
 		}
 		vkLayer->Draw();
-		
+
+		rttGUI()->Render();
 		
 	}
 }

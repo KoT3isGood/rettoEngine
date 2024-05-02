@@ -37,18 +37,7 @@ void main() {
     vec3 sunSampleCoords = normalize(vec3(3,0,10)+sampleNoise(coords));
 
     shadow = false;
-    traceRayEXT(topLevelAS, // acceleration structure
-          gl_RayFlagsTerminateOnFirstHitEXT | gl_RayFlagsOpaqueEXT | gl_RayFlagsSkipClosestHitShaderEXT,       // rayFlags
-          0xFF,           // cullMask
-          0,              // sbtRecordOffset
-          0,              // sbtRecordStride
-          1,              // missIndex
-          worldPos,     // ray origin
-          0.001,           // ray min range
-          sunSampleCoords,  // ray direction
-          10000,           // ray max range
-          1               // payload (location = 0)
-    );
+    
     bool shadowClone = shadow;
     prd.color = vec3(0);
     prd.reflectionCounted++;
@@ -70,6 +59,6 @@ void main() {
     if (shadowClone) {
       sunColor=vec3(1,1,1)*dot(normal,sunSampleCoords);
     }
-    prd.color = sunColor;
+    prd.color = vec3(prd.depth)/100.0;
     prd.normal = normal;
 }

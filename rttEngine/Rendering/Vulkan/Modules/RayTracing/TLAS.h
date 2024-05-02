@@ -11,7 +11,7 @@ namespace rttvk {
 		virtual void Create() override;
 		virtual void Destroy() override;
 		void Build();
-		void Update();
+		void Update(CommandBuffer* cmd);
 		VkAccelerationStructureKHR* GetAccelerationStructure();
 		
 		

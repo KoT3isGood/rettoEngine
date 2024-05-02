@@ -7,6 +7,10 @@ layout (binding = 1) uniform accelerationStructureEXT topLevelAS;
 layout (binding = 2) uniform res {
   vec2 resData;
 } resolution;
+layout (binding = 4) uniform cameraPosBinding {
+  vec4 cameraPos;
+} camera;
+
 
 
 layout(location = 0) rayPayloadEXT hitPayload prd;
@@ -15,6 +19,7 @@ layout(binding = 3) uniform sampler2D blueNoiseTexture;
 vec3 sampleNoise(vec2 coords) {
   return texture(blueNoiseTexture,coords*resolution.resData.xy/vec2(256)).xyz*2-1;
 };
+
 
 void main() {
 
@@ -25,7 +30,7 @@ void main() {
     vec2 texCoords = (coords-0.5)/resolution.resData.yx*resolution.resData.x;
 
     //vec3 origin = vec3(-11.4,9.2,4.2);
-    vec3 origin = vec3(-10,0,2);
+    vec3 origin = camera.cameraPos.xyz;
     //vec3 origin = vec3(-4,0,0);
 
     uvec2 pixelCoord = gl_LaunchIDEXT.xy;
@@ -37,7 +42,7 @@ void main() {
 
     prd.didHit = true;
     prd.color = vec3(0.0);
-    for (int i = 0;i<2;i++) {
+    for (int i = 0;i<1;i++) {
       if (!prd.didHit) {
         break;
       }

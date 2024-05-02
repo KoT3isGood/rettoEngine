@@ -55,11 +55,23 @@ VulkanLayer::VulkanLayer()
 	poolSize2.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	poolSize2.descriptorCount = 1;
 
-	VkDescriptorPoolSize poolSizes[] = { poolSize,poolSize2 };
+	VkDescriptorPoolSize poolSize3 = {};
+	poolSize3.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	poolSize3.descriptorCount = 1;
+
+	VkDescriptorPoolSize poolSize4 = {};
+	poolSize4.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	poolSize4.descriptorCount = 1;
+
+	VkDescriptorPoolSize poolSize5 = {};
+	poolSize5.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSize5.descriptorCount = 1;
+
+	VkDescriptorPoolSize poolSizes[] = { poolSize,poolSize2,poolSize3,poolSize4,poolSize5 };
 
 	VkDescriptorPoolCreateInfo poolCreateInfo = {};
 	poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolCreateInfo.poolSizeCount = 2;
+	poolCreateInfo.poolSizeCount = 5;
 	poolCreateInfo.pPoolSizes = poolSizes;
 	poolCreateInfo.maxSets = 1;
 
@@ -75,7 +87,7 @@ VulkanLayer::VulkanLayer()
 	VK_CREATE_VALIDATION(vkAllocateDescriptorSets(logicalDevice.GetDevice(), &allocateInfo, &descSet));
 	//buffer.Create();
 
-
+	
 
 
 
@@ -122,7 +134,7 @@ VulkanLayer::VulkanLayer()
 
 	VkDescriptorPoolSize poolSizeRTRes = {};
 	poolSizeRTRes.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizeRTRes.descriptorCount = 1;
+	poolSizeRTRes.descriptorCount = 2;
 
 	VkDescriptorPoolSize poolSizeRTNoise = {};
 	poolSizeRTNoise.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -222,7 +234,17 @@ VulkanLayer::VulkanLayer()
 	tlas.Build();
 
 	blueNoise.Create();
-	
+
+	// TODO: MAKE SIZE DYNAMIC
+	rttGUIDrawHierarchy = rttvk::Buffer(&logicalDevice, 60*1024, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+	rttGUIDrawHierarchy.Create();
+
+	bufferHierarchyAmount = rttvk::Buffer(&logicalDevice, 4, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+	bufferHierarchyAmount.Create();
+	memcpy(bufferHierarchyAmount.GetMapped(), &rttGUI()->id, 4);
+
+	font.Create();
+	cameraPositionBuffer.Create();
 }
 
 VulkanLayer::~VulkanLayer()
@@ -230,6 +252,11 @@ VulkanLayer::~VulkanLayer()
 
 
 	vkDeviceWaitIdle(logicalDevice.GetDevice());
+
+	rttGUIDrawHierarchy.Destroy();
+	bufferHierarchyAmount.Destroy();
+	cameraPositionBuffer.Destroy();
+	font.Destroy();
 
 	blueNoise.Destroy();
 
@@ -306,8 +333,26 @@ void VulkanLayer::ChangeImageLayout(VkImage image, VkImageLayout oldLayout, VkIm
 
 void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
-	
-	memcpy(resolutionBuffer.GetMapped(),resolution, sizeof(resolution));
+	//RTT_LOG("NewFrame");
+	//rttGUIDrawHierarchy.Destroy();
+	//rttGUIDrawHierarchy = rttvk::Buffer(&logicalDevice,rttGUI()->drawHierarchy.size()*4+8,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+	//rttGUIDrawHierarchy.Create();
+	/*tlas.Destroy();
+	tlas.Create();	
+	tlas.Build();*/
+
+	pos[0] = getProcessInfo()->camera[0][3];
+	pos[1] = getProcessInfo()->camera[1][3];
+	pos[2] = getProcessInfo()->camera[2][3];
+	memcpy(rttGUIDrawHierarchy.GetMapped(), rttGUI()->drawHierarchy.data(), rttGUI()->drawHierarchy.size() * 4);
+	memcpy(bufferHierarchyAmount.GetMapped(), &rttGUI()->id, 4);
+	memcpy(cameraPositionBuffer.GetMapped(), pos, 12);
+
+
+
+
+	// Ray tracing pipeline
+	memcpy(resolutionBuffer.GetMapped(), resolution, sizeof(resolution));
 
 	VkDescriptorImageInfo imageInfo = {};
 	imageInfo.imageView = imageViews[imageIndex].GetImageView();
@@ -360,23 +405,78 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsNoise.descriptorCount = 1;
 	wdsNoise.pImageInfo = &noiseImageInfo;
 
+	VkDescriptorBufferInfo camPosInfo{};
+	camPosInfo.buffer = cameraPositionBuffer.GetBuffer();
+	camPosInfo.range = 16;
 
 
-	VkWriteDescriptorSet wdss[]={ wds ,wdsA, wdsRes, wdsNoise};
+	VkWriteDescriptorSet wdsCamPos = {};
+	wdsCamPos.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wdsCamPos.dstSet = descSetRT;
+	wdsCamPos.dstBinding = 4;
+	wdsCamPos.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	wdsCamPos.descriptorCount = 1;
+	wdsCamPos.pBufferInfo = &camPosInfo;
+
+	VkWriteDescriptorSet wdss[] = { wds ,wdsA, wdsRes, wdsNoise,wdsCamPos };
 
 	
 
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 4, wdss, 0, nullptr);
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 5, wdss, 0, nullptr);
+
+	VkDescriptorBufferInfo amountInfo{};
+	amountInfo.buffer = bufferHierarchyAmount.GetBuffer();
+	amountInfo.range = 4;
 
 
 
+	VkWriteDescriptorSet wdsAmount = {};
+	wdsAmount.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wdsAmount.dstSet = descSet;
+	wdsAmount.dstBinding = 2;
+	wdsAmount.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	wdsAmount.descriptorCount = 1;
+	wdsAmount.pBufferInfo = &amountInfo;
+
+	VkDescriptorBufferInfo hierarchyInfo{};
+	hierarchyInfo.buffer = rttGUIDrawHierarchy.GetBuffer();
+	hierarchyInfo.range = rttGUI()->drawHierarchy.size()*4;
+
+
+	VkWriteDescriptorSet wdsHierarchy = {};
+	wdsHierarchy.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wdsHierarchy.dstSet = descSet;
+	wdsHierarchy.dstBinding = 3;
+	wdsHierarchy.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	wdsHierarchy.descriptorCount = 1;
+	wdsHierarchy.pBufferInfo = &hierarchyInfo;
+
+	wds.dstSet = descSet;
+
+	wdsRes.dstSet = descSet;
+	wdsRes.dstBinding = 1;
+
+	VkDescriptorImageInfo fontImageInfo;
+	fontImageInfo.imageView = font.imageView.GetImageView();
+	fontImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	fontImageInfo.sampler = font.textureSampler;
+
+	VkWriteDescriptorSet wdsFont = {};
+	wdsFont.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wdsFont.dstSet = descSet;
+	wdsFont.dstBinding = 4;
+	wdsFont.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	wdsFont.descriptorCount = 1;
+	wdsFont.pImageInfo = &fontImageInfo;
+
+	VkWriteDescriptorSet wdss2[] = { wds, wdsRes, wdsAmount, wdsHierarchy,wdsFont };
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 5, wdss2, 0, nullptr);
 
 
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
-	tlas.Update();
 	ChangeImageLayout(images[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rtPipeline.GetPipeline());
 	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rtPipeline.GetPipelineLayout(), 0, 1, &descSetRT, 0, nullptr);
@@ -384,6 +484,10 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	VkStridedDeviceAddressRegionKHR sbt_null{};
 	
 	vkCmdTraceRaysKHR(commandBuffer.GetBuffer(), &rgenRegion, &rmissRegion, &rchitRegion, &sbt_null, resolution[0], resolution[1], 1);
+
+	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipeline());
+	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipelineLayout(), 0, 1, &descSet, 0, nullptr);
+	vkCmdDispatch(commandBuffer.GetBuffer(), resolution[0], resolution[1], 1);
 
 	ChangeImageLayout(images[imageIndex], VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 

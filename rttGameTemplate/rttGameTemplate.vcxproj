@@ -77,7 +77,7 @@
       <PreprocessorDefinitions>Debug;Win64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>E:\rtt\rtt\rttEngine;E:\rtt\rtt\rttEngine\ThirdParty\Vulkan\Include;$(ProjectDir)\Source</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\rtt\rtt\rttEngine;E:\rtt\rtt\rttEngine\ThirdParty\;%VULKAN_SDK%/Include;$(ProjectDir)\Source</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -95,7 +95,7 @@
       <PreprocessorDefinitions>ReleaseRTT;Win64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>E:\rtt\rtt\rttEngine;E:\rtt\rtt\rttEngine\ThirdParty\Vulkan\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\rtt\rtt\rttEngine;E:\rtt\rtt\rttEngine\ThirdParty\;%VULKAN_SDK%/Include;$(ProjectDir)\Source</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -116,7 +116,7 @@
       <PreprocessorDefinitions>ServerRTT;Win64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>E:\rtt\rtt\rttEngine;E:\rtt\rtt\rttEngine\ThirdParty\Vulkan\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\rtt\rtt\rttEngine;E:\rtt\rtt\rttEngine\ThirdParty\;%VULKAN_SDK%/Include;$(ProjectDir)\Source</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
