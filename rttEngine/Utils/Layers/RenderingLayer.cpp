@@ -12,5 +12,6 @@ void RenderingLayer::DrawMesh(Mesh mesh)
 
 void RenderingLayer::ResetMeshes()
 {
-	meshes = { Mesh() };
+	Mesh mesh = Mesh();
+	meshes = { mesh };
 }

@@ -7,6 +7,7 @@
 #include "Utils\IO\InputOutput.h"
 #include "Utils\VeryCoolMath\Math.h"
 #include "Utils\rttGUI\rttGUI.h"
+#include "Rendering\Vulkan\VulkanLayer.h"
 
 class MeshTest : public Actor {
 public:
@@ -14,5 +15,6 @@ public:
 	virtual void Tick(float deltaTime) override;
 	float time=0.0;
 private:
+	bool shouldDraw = true;
 	Mesh mesh = Mesh();
 };

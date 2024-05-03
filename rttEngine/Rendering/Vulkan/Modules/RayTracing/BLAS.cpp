@@ -36,7 +36,6 @@ namespace rttvk {
 		triangles.vertexData.deviceAddress = vertexBuffer.GetBufferAddress();
 		triangles.vertexStride = 12;
 		triangles.maxVertex = meshData->vertices.size()/3;
-		RTT_LOG("triangles.maxVertex: " + std::to_string(triangles.maxVertex));
 		triangles.indexType = VK_INDEX_TYPE_UINT32;
 		triangles.indexData.deviceAddress = indexBuffer.GetBufferAddress();
 		//triangles.indexData.deviceAddress = indexBuffer.GetBufferAddress();
@@ -48,7 +47,6 @@ namespace rttvk {
 
 		offset.firstVertex = 0;
 		offset.primitiveCount = meshData->indicies.size()/3;
-		RTT_LOG("offset.primitiveCount: "+std::to_string(offset.primitiveCount));
 		offset.primitiveOffset = 0;
 		offset.transformOffset = 0;
 
@@ -74,9 +72,6 @@ namespace rttvk {
 
 		vkGetAccelerationStructureBuildSizesKHR(device->GetDevice(), VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &geometryInfo, &count, &sizeInfo);
 
-		RTT_LOG("[ VULKAN ] [ BLAS ] Build Sizes");
-		RTT_LOG("[ VULKAN ] [ BLAS ] Acceleration structure size: "+std::to_string(sizeInfo.accelerationStructureSize));
-		RTT_LOG("[ VULKAN ] [ BLAS ] Scratch size: " + std::to_string(sizeInfo.buildScratchSize));
 
 		scratchBuffer = Buffer(device, sizeInfo.buildScratchSize,
 			VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
@@ -136,7 +131,6 @@ namespace rttvk {
 		vkQueueSubmit(device->GetGraphicsQueue(), 1, &submitInfo, nullptr);
 		vkQueueWaitIdle(device->GetGraphicsQueue());
 		float end = getRunningTime();
-		RTT_LOG("It took " + std::to_string(end - start) + "s to build BLAS");
 
 		cmd.Destroy();
 		cmdPool.Destroy();

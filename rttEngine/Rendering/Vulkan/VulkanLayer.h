@@ -66,7 +66,7 @@ private:
 
 		},{
 			//"VK_LAYER_LUNARG_api_dump",
-			"VK_LAYER_KHRONOS_validation"
+			//"VK_LAYER_KHRONOS_validation"
 		});
 
 	rttvk::DebugMessenger debugMessenger = rttvk::DebugMessenger(&instance);
@@ -190,12 +190,16 @@ private:
 	bool hasbuilt = false;
 
 	rttvk::BLAS blas = rttvk::BLAS(&logicalDevice,&cube);
-	std::vector<rttvk::BLAS*> blases = {&blas};
+	rttvk::BLAS blasSponza = rttvk::BLAS(&logicalDevice, &sponza);
+	std::vector<rttvk::BLAS*> blases = {&blas, &blasSponza};
 	rttvk::TLAS tlas = rttvk::TLAS(&logicalDevice,&meshes, &blases);
 	rttvk::Texture blueNoise = rttvk::Texture(&logicalDevice,"Content/Textures/bluenoise256.png");
 
 	MeshData cube = MeshData();
-	OBJLoader cubeLoader = OBJLoader("Content/Meshes/sponza.obj", &cube);
+	OBJLoader cubeLoader = OBJLoader("Content/Meshes/none.obj", &cube);
+	MeshData sponza = MeshData();
+	OBJLoader sponzaLoader = OBJLoader("Content/Meshes/sponza.obj", &sponza);
+	
 
 private:
 	// rttGUI

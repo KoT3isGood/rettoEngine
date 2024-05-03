@@ -97,7 +97,6 @@ VulkanLayer::VulkanLayer()
 
 
 
-	RTT_LOG("-------- RAY TRACING --------");
 
 
 
@@ -189,7 +188,6 @@ VulkanLayer::VulkanLayer()
 	// FIXME: Use better way to find sizes
 	const uint32_t handleSize = rtProperties.shaderGroupHandleSize;
 	const uint32_t handleSizeAligned = align(rtProperties.shaderGroupHandleSize, rtProperties.shaderGroupHandleAlignment);
-	RTT_LOG("handleSizeAligned: "+std::to_string(handleSizeAligned));
 	rgenRegion.size = handleSizeAligned;
 	rgenRegion.stride = handleSizeAligned;
 	rmissRegion.size = handleSizeAligned;
@@ -208,11 +206,8 @@ VulkanLayer::VulkanLayer()
 
 
 	rgenRegion.deviceAddress = shaderBindingTable.GetBufferAddress();
-	RTT_LOG("rgenRegion.deviceAddress: " + std::to_string(rgenRegion.deviceAddress));
 	rmissRegion.deviceAddress = shaderBindingTable.GetBufferAddress()+32;
-	RTT_LOG("rmissRegion.deviceAddress: " + std::to_string(rmissRegion.deviceAddress));
 	rchitRegion.deviceAddress = shaderBindingTable.GetBufferAddress() + 64+32;
-	RTT_LOG("rchitRegion.deviceAddress: " + std::to_string(rchitRegion.deviceAddress));
 
 
 	// Some test meshes to test how tlas works
@@ -228,8 +223,10 @@ VulkanLayer::VulkanLayer()
 
 
 	// Creating and building acceleration structures
+	blasSponza.Create();
 	blas.Create();
 	tlas.Create();
+	blasSponza.Build();
 	blas.Build();
 	tlas.Build();
 
@@ -333,13 +330,8 @@ void VulkanLayer::ChangeImageLayout(VkImage image, VkImageLayout oldLayout, VkIm
 
 void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
-	//RTT_LOG("NewFrame");
-	//rttGUIDrawHierarchy.Destroy();
-	//rttGUIDrawHierarchy = rttvk::Buffer(&logicalDevice,rttGUI()->drawHierarchy.size()*4+8,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-	//rttGUIDrawHierarchy.Create();
-	/*tlas.Destroy();
-	tlas.Create();	
-	tlas.Build();*/
+
+	
 
 	pos[0] = getProcessInfo()->camera[0][3];
 	pos[1] = getProcessInfo()->camera[1][3];
@@ -354,6 +346,8 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	// Ray tracing pipeline
 	memcpy(resolutionBuffer.GetMapped(), resolution, sizeof(resolution));
 
+
+	// TODO: Move this into constructor
 	VkDescriptorImageInfo imageInfo = {};
 	imageInfo.imageView = imageViews[imageIndex].GetImageView();
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -477,6 +471,10 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	vkBeginCommandBuffer(commandBuffer.GetBuffer(), &beginInfo);
+
+
+	tlas.Update(&commandBuffer);
+
 	ChangeImageLayout(images[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rtPipeline.GetPipeline());
 	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rtPipeline.GetPipelineLayout(), 0, 1, &descSetRT, 0, nullptr);
@@ -494,7 +492,14 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	vkEndCommandBuffer(commandBuffer.GetBuffer());
 }
 void VulkanLayer::Draw()
-{ 
+{
+	vkQueueWaitIdle(logicalDevice.GetGraphicsQueue());
+	tlas.Recreate();
+	// FIXME
+	//RTT_LOG("NewFrame");
+	//rttGUIDrawHierarchy.Destroy();
+	//rttGUIDrawHierarchy = rttvk::Buffer(&logicalDevice,rttGUI()->drawHierarchy.size()*4+8,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+	//rttGUIDrawHierarchy.Create();
 
 	vkWaitForFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP(), VK_TRUE, UINT64_MAX);
 	vkResetFences(logicalDevice.GetDevice(), 1, inFlightFence.GetFenceP());

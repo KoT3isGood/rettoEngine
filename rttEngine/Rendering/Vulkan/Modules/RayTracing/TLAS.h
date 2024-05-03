@@ -11,11 +11,13 @@ namespace rttvk {
 		virtual void Create() override;
 		virtual void Destroy() override;
 		void Build();
+		void Recreate();
 		void Update(CommandBuffer* cmd);
 		VkAccelerationStructureKHR* GetAccelerationStructure();
 		
 		
 	private:
+		uint32_t acBufSize = 0;
 		std::vector<BLAS*>* blases;
 		std::vector<Mesh>* meshes;
 		std::vector<VkAccelerationStructureInstanceKHR> instancesArray = {};

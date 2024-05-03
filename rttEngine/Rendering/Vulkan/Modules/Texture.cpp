@@ -98,7 +98,7 @@ namespace rttvk {
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.srcAccessMask = VK_ACCESS_NONE_KHR;
-		barrier.dstAccessMask = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.dstAccessMask = VK_ACCESS_NONE_KHR;
 		barrier.image = textureImage;
 		barrier.subresourceRange = access;
 		barrier.pNext = nullptr;
