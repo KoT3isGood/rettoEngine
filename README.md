@@ -3,6 +3,7 @@
 Not so fast game engine that doesn't use rasterization. 
 ## Features
 - Fully generated image with compute and ray tracing pipeline
+- Immediate-mode rendering and IO
 
 ## Installation and building
 ### Prerequirements
