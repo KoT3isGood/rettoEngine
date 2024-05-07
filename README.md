@@ -6,6 +6,7 @@ Not so fast game engine that doesn't use rasterization.
 ### Prerequirements
 - Vulkan API with binded path to it
 
+### Installation
 1. `git clone https://github.com/KoT3isGood/rettoEngine.git`
 2. Open visual studio solution and build rttEngine project
 Now you can create new projects using ReTTo
