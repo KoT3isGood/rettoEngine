@@ -5,6 +5,6 @@
 #include <windows.h>
 #endif
 
-bool CheckIfButton(int key);
+bool IsKeyDown(int key);
 int* GetMousePosition();
 void SetMousePosition(int* position);

@@ -21,15 +21,51 @@ namespace rttvk {
 			VK_BUFFER_USAGE_INDEX_BUFFER_BIT
 		);
 
+		uvBuffer = Buffer(device, meshData->uvs.size() * 4,
+			VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
+			VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+			VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+		);
+		uvIndexesBuffer = Buffer(device, meshData->uvIndicies.size() * 4,
+			VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
+			VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+			VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+		);
+
+		std::vector<Material> materials = {};
+		for (auto mat : meshData->materialsArray) {
+			materials.push_back(mat.second);
+		}
+		materialBuffer = Buffer(device, materials.size()*sizeof(Material)+4,
+			VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
+			VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+			VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+		);
+		materialIndexesBuffer = Buffer(device, meshData->materialSizes.size() * 4+4,
+			VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
+			VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+			VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+		);
+
 		vertexBuffer.Create();
 		//vertexBuffer.shouldBeMapped = false;
 		indexBuffer.Create();
-		//indexBuffer.shouldBeMapped = false;
+
+		uvBuffer.Create();
+		uvIndexesBuffer.Create();
+		materialBuffer.Create();
+		materialIndexesBuffer.Create();
 		
 		memcpy(vertexBuffer.GetMapped(), meshData->vertices.data(), meshData->vertices.size() * 4);
-		//meshData->vertices = {};
 		memcpy(indexBuffer.GetMapped(), meshData->indicies.data(), meshData->indicies.size() * 4);
-		//meshData->indicies = {};
+		memcpy(uvBuffer.GetMapped(), meshData->uvs.data(), meshData->uvs.size() * 4);
+		memcpy(uvIndexesBuffer.GetMapped(), meshData->uvIndicies.data(), meshData->uvIndicies.size() * 4);
+		memcpy(materialBuffer.GetMapped(), materials.data(), materials.size() * sizeof(Material));
+		memcpy(materialIndexesBuffer.GetMapped(), meshData->materialSizes.data(), meshData->materialSizes.size() * 4);
 
 		triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
 		triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;

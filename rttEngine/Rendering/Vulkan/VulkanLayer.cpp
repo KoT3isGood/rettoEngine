@@ -131,19 +131,23 @@ VulkanLayer::VulkanLayer()
 	poolSizeRT2.type = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
 	poolSizeRT2.descriptorCount = 1;
 
-	VkDescriptorPoolSize poolSizeRTRes = {};
-	poolSizeRTRes.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizeRTRes.descriptorCount = 2;
+	VkDescriptorPoolSize poolSizeRTUniform = {};
+	poolSizeRTUniform.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizeRTUniform.descriptorCount = 3;
 
 	VkDescriptorPoolSize poolSizeRTNoise = {};
 	poolSizeRTNoise.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	poolSizeRTNoise.descriptorCount = 1;
 
-	VkDescriptorPoolSize poolSizeRTs[] = { poolSizeRT,poolSizeRT2,poolSizeRTRes,poolSizeRTNoise };
+	VkDescriptorPoolSize poolSizeRTStorage = {};
+	poolSizeRTStorage.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	poolSizeRTStorage.descriptorCount = 2;
+
+	VkDescriptorPoolSize poolSizeRTs[] = { poolSizeRT,poolSizeRT2,poolSizeRTUniform,poolSizeRTNoise,poolSizeRTStorage };
 
 	VkDescriptorPoolCreateInfo poolCreateInfoRT = {};
 	poolCreateInfoRT.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolCreateInfoRT.poolSizeCount = 4;
+	poolCreateInfoRT.poolSizeCount = 5;
 	poolCreateInfoRT.pPoolSizes = poolSizeRTs;
 	poolCreateInfoRT.maxSets = 1;
 
@@ -223,11 +227,19 @@ VulkanLayer::VulkanLayer()
 
 
 	// Creating and building acceleration structures
-	blasSponza.Create();
-	blas.Create();
+	int i = 0;
+	for (auto mesh: getProcessInfo()->assetRegistry.meshes) {
+		blases.resize(i+1);
+		MeshData meshData = MeshData();
+		OBJLoader objLoader = OBJLoader(mesh.first, &meshData);
+		blases[i]=rttvk::BLAS(&logicalDevice,&meshData);
+		blases[i].Create();
+		blases[i].Build();
+		i++;
+	};
+
+
 	tlas.Create();
-	blasSponza.Build();
-	blas.Build();
 	tlas.Build();
 
 	blueNoise.Create();
@@ -242,6 +254,9 @@ VulkanLayer::VulkanLayer()
 
 	font.Create();
 	cameraPositionBuffer.Create();
+	lightsCountBuffer.Create();
+	lightsBuffer = rttvk::Buffer(&logicalDevice, 32, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+	lightsBuffer.Create();
 }
 
 VulkanLayer::~VulkanLayer()
@@ -258,7 +273,7 @@ VulkanLayer::~VulkanLayer()
 	blueNoise.Destroy();
 
 	tlas.Destroy();
-	blas.Destroy();
+	blases[0].Destroy();
 
 	shadowMissShader.Destroy();
 	rayGenShader.Destroy();
@@ -332,13 +347,21 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
 
 	
-
-	pos[0] = getProcessInfo()->camera[0][3];
-	pos[1] = getProcessInfo()->camera[1][3];
-	pos[2] = getProcessInfo()->camera[2][3];
+	pos[0][0] = getProcessInfo()->camera[0][0];
+	pos[0][1] = getProcessInfo()->camera[0][1];
+	pos[0][2] = getProcessInfo()->camera[0][2];
+	pos[0][3] = getProcessInfo()->camera[0][3];
+	pos[1][0] = getProcessInfo()->camera[1][0];
+	pos[1][1] = getProcessInfo()->camera[1][1];
+	pos[1][2] = getProcessInfo()->camera[1][2];
+	pos[1][3] = getProcessInfo()->camera[1][3];
+	pos[2][0] = getProcessInfo()->camera[2][0];
+	pos[2][1] = getProcessInfo()->camera[2][1];
+	pos[2][2] = getProcessInfo()->camera[2][2];
+	pos[2][3] = getProcessInfo()->camera[2][3];
 	memcpy(rttGUIDrawHierarchy.GetMapped(), rttGUI()->drawHierarchy.data(), rttGUI()->drawHierarchy.size() * 4);
 	memcpy(bufferHierarchyAmount.GetMapped(), &rttGUI()->id, 4);
-	memcpy(cameraPositionBuffer.GetMapped(), pos, 12);
+	memcpy(cameraPositionBuffer.GetMapped(), pos, 48);
 
 
 
@@ -401,7 +424,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 
 	VkDescriptorBufferInfo camPosInfo{};
 	camPosInfo.buffer = cameraPositionBuffer.GetBuffer();
-	camPosInfo.range = 16;
+	camPosInfo.range = 48;
 
 
 	VkWriteDescriptorSet wdsCamPos = {};
@@ -412,11 +435,48 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsCamPos.descriptorCount = 1;
 	wdsCamPos.pBufferInfo = &camPosInfo;
 
-	VkWriteDescriptorSet wdss[] = { wds ,wdsA, wdsRes, wdsNoise,wdsCamPos };
+	VkDescriptorBufferInfo lightsCountInfo{};
+	lightsCountInfo.buffer = lightsCountBuffer.GetBuffer();
+	lightsCountInfo.range = 4;
+
+	VkWriteDescriptorSet wdsLightsCount = {};
+	wdsLightsCount.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wdsLightsCount.dstSet = descSetRT;
+	wdsLightsCount.dstBinding = 5;
+	wdsLightsCount.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	wdsLightsCount.descriptorCount = 1;
+	wdsLightsCount.pBufferInfo = &lightsCountInfo;
+
+	VkDescriptorBufferInfo lightsInfo{};
+	lightsInfo.buffer = lightsBuffer.GetBuffer();
+	lightsInfo.range = lights.size()*32;
+
+	VkWriteDescriptorSet wdsLights = {};
+	wdsLights.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wdsLights.dstSet = descSetRT;
+	wdsLights.dstBinding = 6;
+	wdsLights.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	wdsLights.descriptorCount = 1;
+	wdsLights.pBufferInfo = &lightsInfo;
+
+	VkDescriptorBufferInfo meshesInfo{};
+	meshesInfo.buffer = tlas.blasesDataBuffer.GetBuffer();
+	meshesInfo.range = blases.size()*48;
+
+	VkWriteDescriptorSet wdsMeshes = {};
+	wdsMeshes.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wdsMeshes.dstSet = descSetRT;
+	wdsMeshes.dstBinding = 7;
+	wdsMeshes.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	wdsMeshes.descriptorCount = 1;
+	wdsMeshes.pBufferInfo = &meshesInfo;
+
+
+	VkWriteDescriptorSet wdss[] = { wds ,wdsA, wdsRes, wdsNoise,wdsCamPos, wdsLightsCount, wdsLights, wdsMeshes };
 
 	
 
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 5, wdss, 0, nullptr);
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 8, wdss, 0, nullptr);
 
 	VkDescriptorBufferInfo amountInfo{};
 	amountInfo.buffer = bufferHierarchyAmount.GetBuffer();
@@ -495,6 +555,16 @@ void VulkanLayer::Draw()
 {
 	vkQueueWaitIdle(logicalDevice.GetGraphicsQueue());
 	tlas.Recreate();
+	lightsBuffer.Destroy();
+	lightsBuffer = rttvk::Buffer(&logicalDevice, 32+32*lights.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+	lightsBuffer.Create();
+	for (auto light : lights) {
+		lightsShader.push_back(LightSourceShader{ light.pos[0],light.pos[1] ,light.pos[2],light.size,light.color[0],light.color[1] ,light.color[2],0.0 });
+	}
+	uint32_t lightsCount = lights.size();
+	memcpy(lightsCountBuffer.GetMapped(), &lightsCount, 4);
+	memcpy(lightsBuffer.GetMapped(), lightsShader.data(), 32 * lights.size());
+	lightsShader = {};
 	// FIXME
 	//RTT_LOG("NewFrame");
 	//rttGUIDrawHierarchy.Destroy();

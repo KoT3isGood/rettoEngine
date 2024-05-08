@@ -4,8 +4,8 @@ rttGUIBase gui;
 
 void rttGUIBase::NewFrame()
 {
-	currentinput.leftMouseButton = CheckIfButton(VK_LBUTTON);
-	currentinput.rightMouseButton = CheckIfButton(VK_RBUTTON);
+	currentinput.leftMouseButton = IsKeyDown(VK_LBUTTON);
+	currentinput.rightMouseButton = IsKeyDown(VK_RBUTTON);
 }
 
 vec4 rttGUIBase::Window(std::string name, vec4 windowsize)

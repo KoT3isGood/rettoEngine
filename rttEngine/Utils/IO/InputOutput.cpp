@@ -3,9 +3,9 @@
 
 
 
-bool CheckIfButton(int key)
+bool IsKeyDown(int key)
 {
-    SHORT output = GetKeyState(VK_LBUTTON);
+    SHORT output = GetKeyState(key);
     if (output == -127 || output == -128) {
         return 1;
     }

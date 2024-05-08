@@ -60,6 +60,9 @@ namespace rttvk {
 		queueCreateInfo.queueCount = 1;
 		queueCreateInfo.pQueuePriorities = &priority;
 
+		VkPhysicalDeviceFeatures features = {};
+		features.shaderInt64 = VK_TRUE;
+
 		VkDeviceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		createInfo.enabledExtensionCount = extensions.size();
@@ -68,6 +71,7 @@ namespace rttvk {
 		createInfo.ppEnabledLayerNames = layers.data();
 		createInfo.queueCreateInfoCount = 1;
 		createInfo.pQueueCreateInfos = &queueCreateInfo;
+		createInfo.pEnabledFeatures = &features;
 		createInfo.pNext = &rtPipelineFeatures;
 
 		VK_CREATE_VALIDATION(vkCreateDevice(*physicalDevice, &createInfo, nullptr, &device));

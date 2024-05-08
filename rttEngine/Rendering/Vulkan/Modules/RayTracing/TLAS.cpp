@@ -1,6 +1,6 @@
 #include "TLAS.h"
 namespace rttvk {
-	TLAS::TLAS(LogicalDevice* device, std::vector<Mesh>* meshes, std::vector<BLAS*>* blases)
+	TLAS::TLAS(LogicalDevice* device, std::vector<Mesh>* meshes, std::vector<BLAS>* blases)
 	{
 		this->device = device;
 		this->meshes = meshes;
@@ -17,6 +17,16 @@ namespace rttvk {
 		);
 		instanceBuffer.Create();
 
+
+		for (int i = 0; i < blases->size(); i++) {
+			meshesOD.push_back(ObjectData{(*blases)[i].vertexBuffer.GetBufferAddress(),(*blases)[i].indexBuffer.GetBufferAddress(),(*blases)[i].uvBuffer.GetBufferAddress(),(*blases)[i].uvIndexesBuffer.GetBufferAddress(),(*blases)[i].materialBuffer.GetBufferAddress(),(*blases)[i].materialIndexesBuffer.GetBufferAddress() });
+		}
+		blasesDataBuffer = Buffer(device, 48 * blases->size(),
+			VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
+		);
+		blasesDataBuffer.Create();
+		memcpy(blasesDataBuffer.GetMapped(), meshesOD.data(), 48 * blases->size());
+
 		for (int i = 0; i < meshes->size(); i++) {
 			instance.transform = VkTransformMatrixKHR{
 			(*meshes)[i].rot[0],(*meshes)[i].rot[1],(*meshes)[i].rot[2],(*meshes)[i].pos[0],
@@ -25,7 +35,7 @@ namespace rttvk {
 			};
 			
 			instance.instanceCustomIndex = (*meshes)[i].instanceID;
-			instance.accelerationStructureReference = (*blases)[(*meshes)[i].instanceID]->GetAccelerationStructureAddress();
+			instance.accelerationStructureReference = (*blases)[(*meshes)[i].instanceID].GetAccelerationStructureAddress();
 			instance.flags = 0;
 			instance.mask = 0xFF;
 			instance.instanceShaderBindingTableRecordOffset = 0;
@@ -151,7 +161,7 @@ namespace rttvk {
 			};
 
 			instance.instanceCustomIndex = (*meshes)[i].instanceID;
-			instance.accelerationStructureReference = (*blases)[(*meshes)[i].instanceID]->GetAccelerationStructureAddress();
+			instance.accelerationStructureReference = (*blases)[(*meshes)[i].instanceID].GetAccelerationStructureAddress();
 			instance.flags = 0;
 			instance.mask = 0xFF;
 			instance.instanceShaderBindingTableRecordOffset = 0;

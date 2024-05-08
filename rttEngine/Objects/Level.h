@@ -6,13 +6,19 @@ class Level {
 public:
 	Level() = default;
 
+	// Adds actor to the level
 	void InitActor(Actor* actor);
 
+	// Returns actor by id
 	Actor* GetActorByID(uint64_t id);
-	// DO NOT USE!!! Should be accesed only from ProcessInfo in order to update actors every frame
+
+	// Should be accesed only from ProcessInfo in order to update actors every frame
 	void Tick(float deltaTime);
 private:
+	// TODO: Replace with unordered map
+	// List of all actors
 	std::vector<Actor*> actors;
 };
 
+// Returns Current Level Pointer
 Level* GetCurrentLevel();

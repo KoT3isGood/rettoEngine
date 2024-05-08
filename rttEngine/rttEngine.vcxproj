@@ -19,6 +19,7 @@
     <ClInclude Include="Rendering\Vulkan\Modules\CommandBuffer.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\CommandPool.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\DebugMessenger.h" />
+    <ClInclude Include="Rendering\Vulkan\Modules\Image.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\ImageView.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\Instance.h" />
     <ClInclude Include="Rendering\Vulkan\Modules\LogicalDevice.h" />
@@ -36,6 +37,7 @@
     <ClInclude Include="Utils\Application\AppGeneration.h" />
     <ClInclude Include="Utils\Application\AppInfo.h" />
     <ClInclude Include="Utils\Application\ProcessInfo.h" />
+    <ClInclude Include="Utils\AssetRegistry\AssetRegistry.h" />
     <ClInclude Include="Utils\IO\InputOutput.h" />
     <ClInclude Include="Utils\Layers\Layer.h" />
     <ClInclude Include="Utils\Layers\RenderingLayer.h" />
@@ -58,6 +60,7 @@
     <ClCompile Include="Rendering\Vulkan\Modules\CommandBuffer.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\CommandPool.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\DebugMessenger.cpp" />
+    <ClCompile Include="Rendering\Vulkan\Modules\Image.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\ImageView.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\Instance.cpp" />
     <ClCompile Include="Rendering\Vulkan\Modules\LogicalDevice.cpp" />
@@ -72,6 +75,7 @@
     <ClCompile Include="Rendering\Vulkan\Modules\Texture.cpp" />
     <ClCompile Include="Rendering\Vulkan\VulkanLayer.cpp" />
     <ClCompile Include="Utils\Application\ProcessInfo.cpp" />
+    <ClCompile Include="Utils\AssetRegistry\AssetRegistry.cpp" />
     <ClCompile Include="Utils\IO\InputOutput.cpp" />
     <ClCompile Include="Utils\Layers\Layer.cpp" />
     <ClCompile Include="Utils\Layers\RenderingLayer.cpp" />
@@ -133,7 +137,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>Win64;ToolChain;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>Win64;_CRT_SECURE_NO_WARNINGS;ToolChain;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%VULKAN_SDK%/Include;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -156,7 +160,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>Win64;%(PreprocessorDefinitions);Win64</PreprocessorDefinitions>
+      <PreprocessorDefinitions>Win64;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions);Win64</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%VULKAN_SDK%/Include;$(ProjectDir)ThirdParty;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

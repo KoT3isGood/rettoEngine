@@ -39,6 +39,7 @@ struct ProcessInfo;
 #include "Modules\RayTracing\BLAS.h"
 #include "Modules\RayTracing\TLAS.h"
 #include "Modules\Texture.h"
+#include "Modules\Image.h"
 #include "Utils\VeryCoolMath\Math.h"
 
 
@@ -114,9 +115,9 @@ private:
 
 	rttvk::Buffer buffer = rttvk::Buffer(&logicalDevice,8,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 	rttvk::Buffer bufferHierarchyAmount = rttvk::Buffer(&logicalDevice, 4, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-	rttvk::Buffer cameraPositionBuffer = rttvk::Buffer(&logicalDevice, 16, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+	rttvk::Buffer cameraPositionBuffer = rttvk::Buffer(&logicalDevice, 48, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
-	float pos[4] = { -5,0,0,0 };
+	float pos[3][4] = {-5,0,0,0};
 
 
 
@@ -165,7 +166,10 @@ private:
 	VkDescriptorSetLayoutBinding resBindingRT{ 2,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1 };
 	VkDescriptorSetLayoutBinding noiseBinding{ 3,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,1 };
 	VkDescriptorSetLayoutBinding cameraPosBindingRT{ 4,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1 };
-	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInputRT, tlasBinding, resBindingRT, noiseBinding, cameraPosBindingRT };
+	VkDescriptorSetLayoutBinding lightsCountBindingRT{ 5,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1 };
+	VkDescriptorSetLayoutBinding lightsBindingRT{ 6,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1 };
+	VkDescriptorSetLayoutBinding meshesBindingRT{ 7,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1 };
+	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInputRT, tlasBinding, resBindingRT, noiseBinding, cameraPosBindingRT,lightsCountBindingRT,lightsBindingRT,meshesBindingRT };
 
 	PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR;
 
@@ -189,20 +193,20 @@ private:
 
 	bool hasbuilt = false;
 
-	rttvk::BLAS blas = rttvk::BLAS(&logicalDevice,&cube);
-	rttvk::BLAS blasSponza = rttvk::BLAS(&logicalDevice, &sponza);
-	std::vector<rttvk::BLAS*> blases = {&blas, &blasSponza};
+	std::vector <rttvk::BLAS> blases = {};
 	rttvk::TLAS tlas = rttvk::TLAS(&logicalDevice,&meshes, &blases);
 	rttvk::Texture blueNoise = rttvk::Texture(&logicalDevice,"Content/Textures/bluenoise256.png");
 
-	MeshData cube = MeshData();
-	OBJLoader cubeLoader = OBJLoader("Content/Meshes/none.obj", &cube);
-	MeshData sponza = MeshData();
-	OBJLoader sponzaLoader = OBJLoader("Content/Meshes/sponza.obj", &sponza);
-	
-
+	rttvk::Buffer lightsCountBuffer = rttvk::Buffer(&logicalDevice,4,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+	rttvk::Buffer lightsBuffer = rttvk::Buffer();
+	std::vector <LightSourceShader> lightsShader = {};
 private:
 	// rttGUI
 	rttvk::Texture font = rttvk::Texture(&logicalDevice, "Content/Textures/rttguifont.png");
 	rttvk::Buffer rttGUIDrawHierarchy = rttvk::Buffer();
+
+	// Rendering
+	rttvk::Image albedo = rttvk::Image(&logicalDevice,1280,720);
+	rttvk::Image direct = rttvk::Image(&logicalDevice, 1280, 720);
+	rttvk::Image indirect = rttvk::Image(&logicalDevice, 1280, 720);
 };

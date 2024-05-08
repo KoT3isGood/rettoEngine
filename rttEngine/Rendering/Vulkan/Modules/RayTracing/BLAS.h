@@ -7,6 +7,7 @@
 namespace rttvk {
 	class BLAS : public Module {
 	public:
+		BLAS() = default;
 		BLAS(LogicalDevice* device, MeshData* meshData);
 		virtual void Create() override;
 		virtual void Destroy() override;
@@ -14,12 +15,17 @@ namespace rttvk {
 		VkAccelerationStructureKHR* GetAccelerationStructure();
 		VkDeviceAddress GetAccelerationStructureAddress();
 		
+		Buffer vertexBuffer;
+		Buffer indexBuffer;
+		Buffer uvBuffer;
+		Buffer uvIndexesBuffer;
+		Buffer materialIndexesBuffer;
+		Buffer materialBuffer;
 	private:
 		MeshData* meshData;
 		LogicalDevice* device;
 
-		Buffer vertexBuffer;
-		Buffer indexBuffer;
+		
 		Buffer acBuffer;
 		Buffer scratchBuffer;
 

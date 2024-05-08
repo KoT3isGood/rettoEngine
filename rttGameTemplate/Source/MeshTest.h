@@ -17,4 +17,10 @@ public:
 private:
 	bool shouldDraw = true;
 	Mesh mesh = Mesh();
+	Light light = Light();
+	vec3 cameraPos = vec3(0.0);
+	vec2 cameraRotation = vec2(0.0);
+	std::vector<vec3> poses;
+	bool shouldLockMouse = false;
+	bool isPressingEsc = false;
 };

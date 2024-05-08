@@ -3,6 +3,7 @@
 #include "Utils\Layers\RenderingLayer.h"
 #include "Utils\Surface\Surface.h"
 #include "Utils\VeryCoolMath\Math.h"
+#include "Utils\AssetRegistry\AssetRegistry.h"
 #include <chrono>
 
 class Level;
@@ -17,6 +18,7 @@ struct ProcessInfo {
 	Surface* surface;
 	Level* level; // Should be replaced with layer of levels
 	mat3x4 camera;
+	AssetRegistry assetRegistry;
 };
 
 ProcessInfo* getProcessInfo();

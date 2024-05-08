@@ -1,6 +1,7 @@
 #pragma once
 #include "Utils\Logging\Logger.h"
 #include "Utils\MeshLoader\MeshData.h"
+#include "Utils\Application\ProcessInfo.h"
 #include <string>
 #include <fstream>
 #include <istream>
@@ -15,4 +16,5 @@ private:
 	int token = 0;
 	uint32_t vertex = 0;
 	uint32_t index = 0;
+	uint32_t currentMaterial = 0;
 };

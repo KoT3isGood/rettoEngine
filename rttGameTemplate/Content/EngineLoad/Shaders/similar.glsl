@@ -16,14 +16,28 @@ struct hitPayload
   vec2 uv;
   int instance;
   int triangle;
-  vec3 color;
-
   vec3 normal;
-  //Origin and direction
+
+  //Material
+  vec3 color;
+  float roughness;
 };
 
+struct Material {
+	vec3 albedo;
+	float metalness;
+	float roughness;
+	uint albedoTexture;
+	uint normalTexture;
+};
+
+
 struct ObjectData {
-  uint64_t verticesBufferAddr;
-  uint64_t indexBufferAddr;
+	uint64_t verticesBufferAddr;
+	uint64_t indexBufferAddr;
+	uint64_t uvBufferAddr;
+	uint64_t uvIndexBufferAddr;
+	uint64_t materialBufferAddr;
+	uint64_t materialIndexBufferAddr;
 };
 
