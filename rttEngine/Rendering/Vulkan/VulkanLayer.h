@@ -169,7 +169,8 @@ private:
 	VkDescriptorSetLayoutBinding lightsCountBindingRT{ 5,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1 };
 	VkDescriptorSetLayoutBinding lightsBindingRT{ 6,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1 };
 	VkDescriptorSetLayoutBinding meshesBindingRT{ 7,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1 };
-	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInputRT, tlasBinding, resBindingRT, noiseBinding, cameraPosBindingRT,lightsCountBindingRT,lightsBindingRT,meshesBindingRT };
+	VkDescriptorSetLayoutBinding texturesBindingRT{ 8,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,64 };
+	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInputRT, tlasBinding, resBindingRT, noiseBinding, cameraPosBindingRT,lightsCountBindingRT,lightsBindingRT,meshesBindingRT,texturesBindingRT };
 
 	PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR;
 
@@ -200,6 +201,8 @@ private:
 	rttvk::Buffer lightsCountBuffer = rttvk::Buffer(&logicalDevice,4,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 	rttvk::Buffer lightsBuffer = rttvk::Buffer();
 	std::vector <LightSourceShader> lightsShader = {};
+	std::vector <rttvk::Texture> textures;
+	std::vector<VkDescriptorImageInfo> imageInfos;
 private:
 	// rttGUI
 	rttvk::Texture font = rttvk::Texture(&logicalDevice, "Content/Textures/rttguifont.png");

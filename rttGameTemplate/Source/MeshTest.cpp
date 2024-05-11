@@ -73,45 +73,7 @@ void MeshTest::Tick(float deltaTime)
 
 	
 
-	light.pos[0] = 11.2;
-	light.pos[1] = 4.5;
-	light.pos[2] = 2.0;
-	light.size = 0.5;
-
-	light.color[0] = 1.000000;
-	light.color[1] = 0.850980;
-	light.color[2] = 0.713725;
-	light.Render();
-
-	light.pos[0] = -12;
-	light.pos[1] = 4.5;
-	light.pos[2] = 2.0;
-	light.size = 0.5;
-
-	light.color[0] = 1.000000;
-	light.color[1] = 0.850980;
-	light.color[2] = 0.713725;
-	light.Render();
-
-	light.pos[0] = -12;
-	light.pos[1] = -4.0;
-	light.pos[2] = 2.0;
-	light.size = 0.5;
-
-	light.color[0] = 1.000000;
-	light.color[1] = 0.850980;
-	light.color[2] = 0.713725;
-	light.Render();
-
-	light.pos[0] = 11.2;
-	light.pos[1] = -4.0;
-	light.pos[2] = 2.0;
-	light.size = 0.5;
-
-	light.color[0] = 1.000000;
-	light.color[1] = 0.850980;
-	light.color[2] = 0.713725;
-	light.Render();
+	
 	
 	if (IsKeyDown(0x01)) {
 		vec3 lightPos = cameraPos + matrixYaw * matrixPitch * vec3(1.0, 0.5, -0.25);
@@ -120,9 +82,9 @@ void MeshTest::Tick(float deltaTime)
 		light.pos[2] = lightPos.z;
 		light.size = 0.25;
 
-		light.color[0] = 1.0;
-		light.color[1] = 1.0;
-		light.color[2] = 1.0;
+		light.color[0] = 3.0;
+		light.color[1] = 3.0;
+		light.color[2] = 3.0;
 		light.Render();
 	}
 }

@@ -72,7 +72,7 @@ void main() {
 
     // We trace albedo rays
     
-    for (int i = 0;i<1;i++) {
+    for (int i = 0;i<2;i++) {
       //incominglight = vec3(0.0);
       prd.didHit = true;
       prd.color = vec3(0.0);
@@ -139,13 +139,12 @@ void main() {
           1               // payload (location = 0)
         );
         if (shadow) {
+          color *= prd.color;
           incominglight+=color*sampleColor;
-          color*=1;
         }
         
       }
     }
-    incominglight = vec3(prd.color);
     origin = prd.hitPos;
     direction = normalize(prd.normal+sampleSphere(coords));
     }

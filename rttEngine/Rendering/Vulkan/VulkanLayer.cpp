@@ -137,7 +137,7 @@ VulkanLayer::VulkanLayer()
 
 	VkDescriptorPoolSize poolSizeRTNoise = {};
 	poolSizeRTNoise.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizeRTNoise.descriptorCount = 1;
+	poolSizeRTNoise.descriptorCount = 65;
 
 	VkDescriptorPoolSize poolSizeRTStorage = {};
 	poolSizeRTStorage.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -257,6 +257,21 @@ VulkanLayer::VulkanLayer()
 	lightsCountBuffer.Create();
 	lightsBuffer = rttvk::Buffer(&logicalDevice, 32, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 	lightsBuffer.Create();
+
+	
+
+	uint32_t texturesCounted = 0;
+	imageInfos.resize(getProcessInfo()->assetRegistry.textures.size());
+	for (auto assetTexture : getProcessInfo()->assetRegistry.textures) {
+		rttvk::Texture text = rttvk::Texture(&logicalDevice, assetTexture.first);
+		text.Create();
+		textures.push_back(text);
+		imageInfos[texturesCounted].imageView = text.imageView.GetImageView();
+		imageInfos[texturesCounted].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		imageInfos[texturesCounted].sampler = text.textureSampler;
+		texturesCounted++;
+	}
+	
 }
 
 VulkanLayer::~VulkanLayer()
@@ -471,12 +486,17 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsMeshes.descriptorCount = 1;
 	wdsMeshes.pBufferInfo = &meshesInfo;
 
+	VkWriteDescriptorSet wdsT = {};
+	wdsT.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wdsT.dstSet = descSetRT;
+	wdsT.dstBinding = 8;
+	wdsT.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	wdsT.descriptorCount = 46;
+	wdsT.pImageInfo = imageInfos.data();
 
-	VkWriteDescriptorSet wdss[] = { wds ,wdsA, wdsRes, wdsNoise,wdsCamPos, wdsLightsCount, wdsLights, wdsMeshes };
+	VkWriteDescriptorSet wdss[] = { wds ,wdsA, wdsRes, wdsNoise,wdsCamPos, wdsLightsCount, wdsLights, wdsMeshes, wdsT };
 
-	
-
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 8, wdss, 0, nullptr);
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 9, wdss, 0, nullptr);
 
 	VkDescriptorBufferInfo amountInfo{};
 	amountInfo.buffer = bufferHierarchyAmount.GetBuffer();

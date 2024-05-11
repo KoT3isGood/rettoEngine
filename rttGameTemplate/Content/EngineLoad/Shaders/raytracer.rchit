@@ -14,6 +14,7 @@ layout(buffer_reference, scalar) buffer UVIndexes {ivec3 i[];};
 layout(buffer_reference, scalar) buffer Materials {Material m[];};
 layout(buffer_reference, scalar) buffer MaterialIndexes {uint im[];};
 layout(binding = 7) buffer desc{ObjectData i[];} objDesc;
+layout(binding = 8) uniform sampler2D meshTextures[];
 
 void main() {
     
@@ -59,7 +60,10 @@ void main() {
     prd.hitPos = worldPos;
     prd.depth = gl_HitTEXT-0.001;
 
-    prd.color = vec3(materials.m[materialIndexes.im[gl_PrimitiveID]].albedo);
+     prd.color = vec3(0.0);
+    uint currentTexture = materials.m[materialIndexes.im[gl_PrimitiveID]].albedoTexture;
+    vec3 texColor = texture(meshTextures[nonuniformEXT(currentTexture)],vec2(uv.x,-uv.y)).xyz;
+    prd.color = texColor;
 
     prd.roughness = gl_InstanceCustomIndexEXT*0.5;
     if (gl_InstanceCustomIndexEXT*0.5==0.5) {

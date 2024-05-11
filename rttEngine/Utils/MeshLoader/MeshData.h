@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <map>
 #include <unordered_map>
 #include <string>
 struct Material {
@@ -18,5 +19,5 @@ public:
 	std::vector<uint32_t> uvIndicies;
 	std::vector<uint32_t> materialSizes;
 	std::unordered_map<std::string, uint32_t> materials;
-	std::unordered_map <std::string, Material> materialsArray;
+	std::map <std::string, Material> materialsArray;
 };
