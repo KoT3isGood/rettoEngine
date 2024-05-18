@@ -7,6 +7,7 @@ namespace rttvk {
 	class Pipeline:public Module {
 	public:
 		Pipeline(Shader* shader, LogicalDevice* device, std::vector<VkDescriptorSetLayoutBinding> descSetlayout);
+		Pipeline(Shader* shader, LogicalDevice* device, std::vector<VkDescriptorSetLayoutBinding> descSetlayout, uint32_t pushConstantsSize);
 		virtual void Create() override;
 		virtual void Destroy() override;
 		VkPipeline GetPipeline();
@@ -21,5 +22,6 @@ namespace rttvk {
 		VkPipelineCache cache;
 		VkPipeline pipeline;
 		VkDescriptorSetLayout descriptor;
+		uint32_t pushConstantsSize = 0;
 	};
 }

@@ -1,7 +1,9 @@
 #include "InputOutput.h"
 
 
-
+bool IsGameActive() {
+    return getProcessInfo()->surface->IsWindowActive();
+};
 
 bool IsKeyDown(int key)
 {

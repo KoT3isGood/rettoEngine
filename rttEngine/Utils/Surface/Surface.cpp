@@ -13,3 +13,8 @@ void Surface::StartUpdateLoop()
 	
 }
 
+bool Surface::IsWindowActive()
+{
+	return false;
+}
+

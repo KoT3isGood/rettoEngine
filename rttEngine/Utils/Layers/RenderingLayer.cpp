@@ -16,7 +16,6 @@ void RenderingLayer::AddLight(Light light)
 
 void RenderingLayer::ResetMeshes()
 {
-	Mesh mesh = Mesh();
-	meshes = { mesh };
+	meshes = { };
 	lights = { };
 }

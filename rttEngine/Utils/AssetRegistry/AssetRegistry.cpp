@@ -1,5 +1,5 @@
 #include "AssetRegistry.h"
-
+#define RTT_CURRENT_APP "asset"
 AssetRegistry::AssetRegistry()
 {
 	std::filesystem::path meshesPath = "Content/Meshes";
@@ -24,7 +24,7 @@ AssetRegistry::AssetRegistry()
 			continue;
 		}
 		std::string texturePath = std::filesystem::path(texture).generic_string();
-		RTT_LOG(texturePath+" | "+ std::to_string(texturesCount));
+		RTT_LOG(texturePath);
 		textures[texturePath] = texturesCount;
 		texturesCount++;
 	}

@@ -1,5 +1,5 @@
 #version 460
-layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 layout (binding = 0, rgba8) uniform image2D colorBuffer;
 layout (binding = 1) uniform res {
      vec2 resolution;
@@ -12,6 +12,9 @@ layout (binding = 3) readonly buffer hierarchy{
      uint tree[];
 } hierarchyBuffer;
 layout(binding = 4) uniform sampler2D fontTexture;
+layout (binding = 9, rgba32f) uniform image2D albedoColorBuffer;
+layout (binding = 10, rgba32f) uniform image2D directColorBuffer;
+layout (binding = 11, rgba32f) uniform image2D indirectColorBuffer;
 
 bool checkIfInAABB(vec2 texcoord, vec4 aabb) {
     return texcoord.x>=aabb.x&&texcoord.y>=aabb.y&&texcoord.x<=aabb.z&&texcoord.y<=aabb.w;
@@ -75,8 +78,10 @@ void main() {
         }
         currentElement+=6+lenght4b;
     }
-    if (shouldDraw) {
-        imageStore(colorBuffer,screen_pos, vec4(color,1.0));
-    }
+    vec4 color3 = imageLoad(albedoColorBuffer,screen_pos)*(imageLoad(directColorBuffer,screen_pos)+imageLoad(indirectColorBuffer,screen_pos));
+    
+
+    imageStore(colorBuffer,screen_pos,color3);
+    
 
 }

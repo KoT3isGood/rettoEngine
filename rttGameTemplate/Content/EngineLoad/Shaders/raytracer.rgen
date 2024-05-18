@@ -29,6 +29,11 @@ layout(location = 0) rayPayloadEXT hitPayload prd;
 layout(location = 1) rayPayloadEXT bool shadow;
 
 layout(binding = 3) uniform sampler2D blueNoiseTexture;
+layout (binding = 9, rgba32f) uniform image2D albedoColorBuffer;
+layout (binding = 10, rgba32f) uniform image2D directColorBuffer;
+layout (binding = 11, rgba32f) uniform image2D indirectColorBuffer;
+layout (binding = 12, rgba32f) uniform image2D normalColorBuffer;
+layout (binding = 13, rgba32f) uniform image2D worldPosColorBuffer;
 vec3 sampleNoise(vec2 coords) {
   return texture(blueNoiseTexture,coords*resolution.resData.xy/vec2(256)).xyz*2-1;
 };
@@ -69,11 +74,13 @@ void main() {
 
     vec3 color = vec3(1.0, 1.0, 1.0);
     vec3 incominglight = vec3(0.0,0.0,0.0);
-
+    vec3 albedo = vec3(0.0);
+    vec3 normal = vec3(0.0);
+    vec3 worldPos = vec3(0.0);
+    vec3 shadowColor = vec3(0.0);
     // We trace albedo rays
     
     for (int i = 0;i<2;i++) {
-      //incominglight = vec3(0.0);
       prd.didHit = true;
       prd.color = vec3(0.0);
       float distanceRay = 10000;
@@ -92,8 +99,13 @@ void main() {
           distanceRay,           // ray max range
           0               // payload (location = 0)
       );
+      if (i==0) {
+        albedo = prd.color;
+        normal = prd.normal*0.5+0.5;
+        worldPos = normalize(prd.hitPos-origin)*0.5+0.5;
+      }
     if (prd.didHit) {
-
+        
         float bucketStrength = 0.0;
       
         vec3 directionToSample = vec3(0.0);
@@ -119,7 +131,7 @@ void main() {
           distanceToSample = lenght;
           cosineSample = cosine;
           bucketStrength = outputValue;
-          sampleColor = outputValue*lights[light].color; // TODO: Add Weight Estimation
+          sampleColor = lights[light].color; // TODO: Add Weight Estimation
         }
         };
 
@@ -138,17 +150,27 @@ void main() {
           distanceToSample,           // ray max range
           1               // payload (location = 0)
         );
+        
         if (shadow) {
-          color *= prd.color;
-          incominglight+=color*sampleColor;
+          if (i==0) {
+            shadowColor=sampleColor*min(bucketStrength,1.0);
+          } else {
+            incominglight+=prd.color*sampleColor*min(bucketStrength,1.0);
+          }
         }
+        color*=prd.color;
         
       }
+    } else {
+      break;
     }
     origin = prd.hitPos;
     direction = normalize(prd.normal+sampleSphere(coords));
     }
 
-    
-    imageStore(colorBuffer, ivec2(gl_LaunchIDEXT.xy), vec4(incominglight, 0.0));
+    imageStore(albedoColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(albedo, 1.0));
+    imageStore(directColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(shadowColor, 1.0));
+    imageStore(indirectColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(incominglight, 1.0));
+    imageStore(normalColorBuffer,ivec2(gl_LaunchIDEXT),vec4(normal,0.0));
+    imageStore(worldPosColorBuffer,ivec2(gl_LaunchIDEXT),vec4(worldPos,0.0));
 } 

@@ -42,6 +42,8 @@ public:
 	HWND Handle = nullptr;
 
 	HINSTANCE instance = nullptr;
+
+	virtual bool IsWindowActive() override;
 private:
 	Layer renderingLayers;
 
@@ -55,6 +57,8 @@ private:
 
 	// Window handler
 	static LRESULT CALLBACK WindowEventHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	bool isActive = false;
 
 };
 #endif

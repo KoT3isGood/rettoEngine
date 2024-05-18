@@ -1,0 +1,83 @@
+#version 460
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+layout(push_constant, std430) uniform pc {
+    int waveletSize;
+};
+layout (binding = 10, rgba32f) uniform image2D directColorBuffer;
+layout (binding = 11, rgba32f) uniform image2D indirectColorBuffer;
+layout (binding = 12, rgba32f) uniform image2D normalColorBuffer;
+layout (binding = 13, rgba32f) uniform image2D worldPosColorBuffer;
+layout (binding = 14, rgba32f) uniform image2D direct2ColorBuffer;
+layout (binding = 15, rgba32f) uniform image2D indirect2ColorBuffer;
+
+vec3 getDirectPixelColor(ivec2 pos) {
+    if (waveletSize%2==0) {
+        return imageLoad(direct2ColorBuffer,pos).xyz;
+    } else {
+       return  imageLoad(directColorBuffer,pos).xyz;
+    }
+};
+
+vec3 getInDirectPixelColor(ivec2 pos) {
+    if (waveletSize%2==0) {
+        return imageLoad(indirect2ColorBuffer,pos).xyz;
+    } else {
+       return  imageLoad(indirectColorBuffer,pos).xyz;
+    }
+};
+void main() {
+  ivec2 screen_pos = ivec2(gl_GlobalInvocationID.xy);
+  int stepSize = 2^(waveletSize-1);
+  float kernel[3] = {1.0/4.0,1.0/2.0,1.0/4.0};
+  vec3 outputValue = vec3(0);
+  float cum = 0.0;
+  vec3 outputValue2 = vec3(0);
+  float cum2 = 0.0;
+  vec3 directSampleOrig = getDirectPixelColor(screen_pos);
+  vec3 indirectSampleOrig = getInDirectPixelColor(screen_pos);
+  vec3 normalSampleOrig = imageLoad(normalColorBuffer,screen_pos).xyz;
+  vec3 worldPosSampleOrig = imageLoad(worldPosColorBuffer,screen_pos).xyz;
+
+  for (int x = 0;x<3;x++) {
+    for (int y = 0;y<3;y++) {
+        ivec2 pixelPos = ivec2(x-1,y-1)*stepSize;
+        vec3 directSample = getDirectPixelColor(screen_pos-pixelPos);
+        vec3 indirectSample = getInDirectPixelColor(screen_pos-pixelPos);
+        vec3 normalSample = imageLoad(normalColorBuffer,screen_pos-pixelPos).xyz;
+        vec3 worldPosSample = imageLoad(worldPosColorBuffer,screen_pos-pixelPos).xyz;
+        vec3 dt =directSampleOrig-directSample;
+        float dist2T = dot(dt,dt);
+        float cw = min(exp(-dist2T*0.001),1.0f);
+
+         vec3 it = indirectSampleOrig-indirectSample;
+        float dist2I = dot(it,it);
+        float cw2 = min(exp(-dist2I*0.01),1.0f);
+
+        vec3 nt =normalSampleOrig-normalSample;
+        float dist2N = dot(nt,nt);
+        float nw = min(exp(-dist2N/0.0001),1.0f);
+
+        vec3 wt =worldPosSampleOrig-worldPosSample;
+        float dist2W = dot(wt,wt);
+        float ww = min(exp(-dist2W/0.0001),1.0f);
+        float weight = cw*nw*ww;
+        float weight2 = cw2*nw*ww;
+
+        outputValue += directSample*weight*kernel[x]*kernel[y];
+        cum+=weight*kernel[x]*kernel[y];
+        outputValue2 += indirectSample*weight2*kernel[x]*kernel[y];
+        cum2+=weight2*kernel[x]*kernel[y];
+    }
+  }
+
+  if (waveletSize%2==0) {
+    imageStore(directColorBuffer,screen_pos,vec4(outputValue/cum,1.0));
+  } else {
+    imageStore(direct2ColorBuffer,screen_pos,vec4(outputValue/cum,1.0));
+  }
+    if (waveletSize%2==0) {
+    imageStore(indirectColorBuffer,screen_pos,vec4(outputValue2/cum2,1.0));
+  } else {
+    imageStore(indirect2ColorBuffer,screen_pos,vec4(outputValue2/cum2,1.0));
+  }
+}

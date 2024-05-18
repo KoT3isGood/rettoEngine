@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Utils\Application\ProcessInfo.h"
 
 #ifdef Win64
 #include <windows.h>
@@ -8,3 +9,5 @@
 bool IsKeyDown(int key);
 int* GetMousePosition();
 void SetMousePosition(int* position);
+
+bool IsGameActive();

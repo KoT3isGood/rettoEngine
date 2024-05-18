@@ -94,7 +94,7 @@ namespace rttvk {
 		VkImageMemoryBarrier barrier;
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		barrier.newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.srcAccessMask = VK_ACCESS_NONE_KHR;
@@ -122,6 +122,10 @@ namespace rttvk {
 
 		vkBeginCommandBuffer(cmd.GetBuffer(), &beginInfo);
 
+		vkCmdPipelineBarrier(cmd.GetBuffer(), VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
 		vkCmdCopyBufferToImage(
 			cmd.GetBuffer(),
 			imageBuffer.GetBuffer(),
@@ -130,6 +134,7 @@ namespace rttvk {
 			1,
 			&region
 		);
+		barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 		vkCmdPipelineBarrier(cmd.GetBuffer(), VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 

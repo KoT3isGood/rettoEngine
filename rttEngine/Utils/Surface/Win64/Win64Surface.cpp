@@ -115,6 +115,10 @@ void Win64Surface::StartUpdateLoop()
 		
 	}
 }
+bool Win64Surface::IsWindowActive()
+{
+	return isActive;
+}
 LRESULT Win64Surface::WindowEventHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	Win64Surface* window = (Win64Surface*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -130,6 +134,8 @@ LRESULT Win64Surface::WindowEventHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 		window->resolutionX = LOWORD(lParam);
 		window->resolutionY = HIWORD(lParam);
 		break;
+	case WM_ACTIVATEAPP:
+		window->isActive = (bool)wParam;
 	default:
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 		break;

@@ -27,9 +27,17 @@ namespace rttvk {
 				break;
 			};
 		}
+		VkPhysicalDeviceFeatures features = {};
+		features.shaderInt64 = VK_TRUE;
+		VkPhysicalDeviceVulkan12Features features12 = {};
+		features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+		features12.runtimeDescriptorArray = VK_TRUE;
+		features12.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+
 		VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR positionFetchFeatures{};
 		positionFetchFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR;
 		positionFetchFeatures.rayTracingPositionFetch = VK_TRUE;
+		positionFetchFeatures.pNext = &features12;
 
 
 		// TODO: Test if extension is enabled and then create features
@@ -60,8 +68,7 @@ namespace rttvk {
 		queueCreateInfo.queueCount = 1;
 		queueCreateInfo.pQueuePriorities = &priority;
 
-		VkPhysicalDeviceFeatures features = {};
-		features.shaderInt64 = VK_TRUE;
+
 
 		VkDeviceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

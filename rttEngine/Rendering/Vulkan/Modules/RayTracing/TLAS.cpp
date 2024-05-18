@@ -9,7 +9,16 @@ namespace rttvk {
 	void TLAS::Create()
 	{
 		
-		
+		if (meshes->size() == 0) {
+			Mesh testMesh = Mesh();
+			testMesh.pos[0] = 0;
+			testMesh.pos[1] = 0;
+			testMesh.pos[2] = 0;
+
+
+
+			*meshes = { testMesh };
+		}
 
 		instanceBuffer = Buffer(device, sizeof(VkAccelerationStructureInstanceKHR)*meshes->size(),
 			VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT |
@@ -128,6 +137,19 @@ namespace rttvk {
 		VK_FUNCTION(vkCmdBuildAccelerationStructuresKHR, device->GetDevice());
 		const VkAccelerationStructureBuildRangeInfoKHR* pBuildOffsetInfo = &offset;
 		vkCmdBuildAccelerationStructuresKHR(cmd.GetBuffer(), 1, &geometryInfo, &pBuildOffsetInfo);
+
+		VkMemoryBarrier memoryBarrier = {};
+		memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+		memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR;
+
+		vkCmdPipelineBarrier(cmd.GetBuffer(),
+			VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+			VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+			0,
+			1, &memoryBarrier,
+			0, nullptr,
+			0, nullptr);
 		vkEndCommandBuffer(cmd.GetBuffer());
 
 		VkSubmitInfo submitInfo{};
@@ -137,6 +159,8 @@ namespace rttvk {
 
 		vkQueueSubmit(device->GetGraphicsQueue(), 1, &submitInfo, nullptr);
 		vkQueueWaitIdle(device->GetGraphicsQueue());
+		// Destroy the command buffer
+		vkFreeCommandBuffers(device->GetDevice(), cmdPool.GetPool(), 1, cmd.GetBufferP());
 
 		cmd.Destroy();
 		cmdPool.Destroy();
@@ -226,6 +250,19 @@ namespace rttvk {
 		const VkAccelerationStructureBuildRangeInfoKHR* pBuildOffsetInfo = &offset;
 		
 		vkCmdBuildAccelerationStructuresKHR(cmd->GetBuffer(), 1, &geometryInfo, &pBuildOffsetInfo);
+
+		VkMemoryBarrier memoryBarrier = {};
+		memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+		memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR;
+
+		vkCmdPipelineBarrier(cmd->GetBuffer(),
+			VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+			VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+			0,
+			1, &memoryBarrier,
+			0, nullptr,
+			0, nullptr);
 	}
 	VkAccelerationStructureKHR* TLAS::GetAccelerationStructure()
 	{

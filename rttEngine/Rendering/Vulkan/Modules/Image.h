@@ -10,12 +10,14 @@ namespace rttvk {
 	class Image : public Module {
 	public:
 		Image(LogicalDevice* device, uint32_t x, uint32_t y);
+		Image(LogicalDevice* device, uint32_t x, uint32_t y, VkFormat format);
 		virtual void Create() override;
 		virtual void Destroy() override;
 		ImageView imageView;
 		VkSampler textureSampler;
 		VkImage textureImage;
 	private:
+		VkFormat format;
 		uint32_t x;
 		uint32_t y;
 		LogicalDevice* device;

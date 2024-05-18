@@ -14,7 +14,9 @@ public:
 	MeshTest();
 	virtual void Tick(float deltaTime) override;
 	float time=0.0;
+	float time2 = 0.0;
 private:
+	bool previousState = false;
 	bool shouldDraw = true;
 	Mesh mesh = Mesh();
 	Light light = Light();
@@ -22,5 +24,6 @@ private:
 	vec2 cameraRotation = vec2(0.0);
 	std::vector<vec3> poses;
 	bool shouldLockMouse = false;
+	bool shouldLockMousePrev = false;
 	bool isPressingEsc = false;
 };

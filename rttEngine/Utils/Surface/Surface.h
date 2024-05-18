@@ -26,4 +26,6 @@ public:
 	float resolutionY = 0;
 	float positionX = 0;
 	float positionY = 0;
+
+	virtual bool IsWindowActive();
 };
