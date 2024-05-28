@@ -4,7 +4,7 @@
 
 Win64Surface::Win64Surface(const char* windowName)
 {
-	getProcessInfo()->surface = this;
+	GetProcessInfo()->surface = this;
 
 	const wchar_t CLASS_NAME[] = L"Sample Window Class";
 
@@ -60,7 +60,7 @@ Win64Surface::Win64Surface(const char* windowName)
 
 
 	vkLayer = new VulkanLayer();
-	getProcessInfo()->renderingLayer = vkLayer;
+	GetProcessInfo()->renderingLayer = vkLayer;
 	renderingLayers.PushBack(vkLayer);
 }
 

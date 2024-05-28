@@ -36,9 +36,9 @@ void Camera::Tick(float deltaTime)
 		};
 
 		vec2 mousePosX = vec2(GetMousePosition()[0], GetMousePosition()[1]);
-		vec2 windowPos = vec2(getProcessInfo()->surface->positionY + 7, getProcessInfo()->surface->positionX + 31);
-		vec2 absPos = mousePosX - windowPos - vec2((int)(getProcessInfo()->surface->resolutionX * 0.5), (int)(getProcessInfo()->surface->resolutionY * 0.5));
-		int pos[2] = { int(windowPos.x + getProcessInfo()->surface->resolutionX * 0.5), int(windowPos.y + getProcessInfo()->surface->resolutionY * 0.5) };
+		vec2 windowPos = vec2(GetProcessInfo()->surface->positionY + 7, GetProcessInfo()->surface->positionX + 31);
+		vec2 absPos = mousePosX - windowPos - vec2((int)(GetProcessInfo()->surface->resolutionX * 0.5), (int)(GetProcessInfo()->surface->resolutionY * 0.5));
+		int pos[2] = { int(windowPos.x + GetProcessInfo()->surface->resolutionX * 0.5), int(windowPos.y + GetProcessInfo()->surface->resolutionY * 0.5) };
 		if (shouldLockMouse) {
 			SetMousePosition(pos);
 			if (previousState&&shouldLockMousePrev) {
@@ -50,7 +50,7 @@ void Camera::Tick(float deltaTime)
 	shouldLockMousePrev = shouldLockMouse;
 	
 	// POSITION
-	getProcessInfo()->camera = getMatrixFromRotation(cameraRotation.y, -cameraRotation.x, 0.0);
+	GetProcessInfo()->camera = getMatrixFromRotation(cameraRotation.y, -cameraRotation.x, 0.0);
 	mat3 matrixPitch = getMatrixFromRotation(-cameraRotation.y, 0.0, 0.0);
 	mat3 matrixYaw = getMatrixFromRotation(0.0, -cameraRotation.x, 0.0);
 	vec3 frontalDirection = matrixYaw* matrixPitch * vec3(1.0, 0.0, 0.0);
@@ -77,9 +77,9 @@ void Camera::Tick(float deltaTime)
 
 
 
-	getProcessInfo()->camera[0][3] = cameraPos.x;
-	getProcessInfo()->camera[1][3] = cameraPos.y;
-	getProcessInfo()->camera[2][3] = cameraPos.z;
+	GetProcessInfo()->camera[0][3] = cameraPos.x;
+	GetProcessInfo()->camera[1][3] = cameraPos.y;
+	GetProcessInfo()->camera[2][3] = cameraPos.z;
 
 	mat3x3 cube = getMatrixFromRotation(cameraRotation.y, cameraRotation.x, 0.0);
 	cube *= vec3(0.5, 0.5, 0.5);
@@ -87,7 +87,7 @@ void Camera::Tick(float deltaTime)
 	vec3 cubeRelativePos = cube2 * (vec3(1, 0.5, -1));
 
 
-	rttGUI()->Text("Camera position: " + std::to_string(getProcessInfo()->camera[0][3])+", "+ std::to_string(getProcessInfo()->camera[1][3]) +", " + std::to_string(getProcessInfo()->camera[2][3]));
+	rttGUI()->Text("Camera position: " + std::to_string(GetProcessInfo()->camera[0][3])+", "+ std::to_string(GetProcessInfo()->camera[1][3]) +", " + std::to_string(GetProcessInfo()->camera[2][3]));
 
 
 	

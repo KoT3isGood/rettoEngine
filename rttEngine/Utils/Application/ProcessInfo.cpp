@@ -3,7 +3,7 @@
 ProcessInfo engineProcessInfo {
 };
 
-ProcessInfo* getProcessInfo()
+ProcessInfo* GetProcessInfo()
 {
 	return &engineProcessInfo;
 }

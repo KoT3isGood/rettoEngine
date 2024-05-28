@@ -10,16 +10,18 @@ class Level;
 class RenderingLayer;
 #include "Objects\Level.h"
 
+// ProcessInfo is a very big buffer that communicates with an Engine
 struct ProcessInfo {
 	int argc;
 	char** argv;
 	AppInfo* appInfo;
 	RenderingLayer* renderingLayer = nullptr;
 	Surface* surface;
-	Level* level; // Should be replaced with layer of levels
+	Level* level;
 	mat3x4 camera;
 	AssetRegistry assetRegistry;
 };
-
-ProcessInfo* getProcessInfo();
+// Returns memory address of Engine instance
+ProcessInfo* GetProcessInfo();
+// Used to get rough time from the start of the app, used for deltaTime
 float getRunningTime();

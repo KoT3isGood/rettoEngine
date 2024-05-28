@@ -2,7 +2,7 @@
 
 
 bool IsGameActive() {
-    return getProcessInfo()->surface->IsWindowActive();
+    return GetProcessInfo()->surface->IsWindowActive();
 };
 
 bool IsKeyDown(int key)

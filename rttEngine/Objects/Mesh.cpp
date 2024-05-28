@@ -3,10 +3,10 @@
 
 void Mesh::Render()
 {
-	getProcessInfo()->renderingLayer->DrawMesh(*this);
+	GetProcessInfo()->renderingLayer->DrawMesh(*this);
 }
 
 void Light::Render()
 {
-	getProcessInfo()->renderingLayer->AddLight(*this);
+	GetProcessInfo()->renderingLayer->AddLight(*this);
 }

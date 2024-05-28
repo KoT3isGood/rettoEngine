@@ -103,8 +103,8 @@ OBJLoader::OBJLoader(std::string file, MeshData* mesh)
 							}
 							sm = "Content/Textures/" + sm;
 							Material* currentMat = &mesh->materialsArray[currentMaterial];
-							AssetRegistry* ar = &getProcessInfo()->assetRegistry;
-							currentMat->albedoTexture = getProcessInfo()->assetRegistry.textures[sm];
+							AssetRegistry* ar = &GetProcessInfo()->assetRegistry;
+							currentMat->albedoTexture = GetProcessInfo()->assetRegistry.textures[sm];
 						}
 					}
 				}

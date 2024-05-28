@@ -255,7 +255,7 @@ VulkanLayer::VulkanLayer()
 	blases[0].Create();
 	blases[0].Build();
 	int i = 1;
-	for (auto mesh: getProcessInfo()->assetRegistry.meshes) {
+	for (auto mesh: GetProcessInfo()->assetRegistry.meshes) {
 		if (mesh.first == "Content/Meshes/none.obj") {
 			continue;
 		}
@@ -291,8 +291,8 @@ VulkanLayer::VulkanLayer()
 	
 
 	uint32_t texturesCounted = 0;
-	imageInfos.resize(getProcessInfo()->assetRegistry.textures.size());
-	for (auto assetTexture : getProcessInfo()->assetRegistry.textures) {
+	imageInfos.resize(GetProcessInfo()->assetRegistry.textures.size());
+	for (auto assetTexture : GetProcessInfo()->assetRegistry.textures) {
 		rttvk::Texture text = rttvk::Texture(&logicalDevice, assetTexture.first);
 		text.Create();
 		textures.push_back(text);
@@ -408,18 +408,18 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	
 	memcpy((void*)((uint64_t)cameraPositionBuffer.GetMapped()+48), pos, 48);
 
-	pos[0][0] = getProcessInfo()->camera[0][0];
-	pos[0][1] = getProcessInfo()->camera[0][1];
-	pos[0][2] = getProcessInfo()->camera[0][2];
-	pos[0][3] = getProcessInfo()->camera[0][3];
-	pos[1][0] = getProcessInfo()->camera[1][0];
-	pos[1][1] = getProcessInfo()->camera[1][1];
-	pos[1][2] = getProcessInfo()->camera[1][2];
-	pos[1][3] = getProcessInfo()->camera[1][3];
-	pos[2][0] = getProcessInfo()->camera[2][0];
-	pos[2][1] = getProcessInfo()->camera[2][1];
-	pos[2][2] = getProcessInfo()->camera[2][2];
-	pos[2][3] = getProcessInfo()->camera[2][3];
+	pos[0][0] = GetProcessInfo()->camera[0][0];
+	pos[0][1] = GetProcessInfo()->camera[0][1];
+	pos[0][2] = GetProcessInfo()->camera[0][2];
+	pos[0][3] = GetProcessInfo()->camera[0][3];
+	pos[1][0] = GetProcessInfo()->camera[1][0];
+	pos[1][1] = GetProcessInfo()->camera[1][1];
+	pos[1][2] = GetProcessInfo()->camera[1][2];
+	pos[1][3] = GetProcessInfo()->camera[1][3];
+	pos[2][0] = GetProcessInfo()->camera[2][0];
+	pos[2][1] = GetProcessInfo()->camera[2][1];
+	pos[2][2] = GetProcessInfo()->camera[2][2];
+	pos[2][3] = GetProcessInfo()->camera[2][3];
 	memcpy(rttGUIDrawHierarchy.GetMapped(), rttGUI()->drawHierarchy.data(), rttGUI()->drawHierarchy.size() * 4);
 	memcpy(bufferHierarchyAmount.GetMapped(), &rttGUI()->id, 4);
 	memcpy(cameraPositionBuffer.GetMapped(), pos, 48);
@@ -648,7 +648,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsT.dstSet = descSetRT;
 	wdsT.dstBinding = 8;
 	wdsT.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	wdsT.descriptorCount = getProcessInfo()->assetRegistry.textures.size();
+	wdsT.descriptorCount = GetProcessInfo()->assetRegistry.textures.size();
 	wdsT.pImageInfo = imageInfos.data();
 
 	VkWriteDescriptorSet wdss[] = { wds ,wdsA, wdsRes, wdsNoise,wdsCamPos, wdsLightsCount, wdsLights, wdsMeshes, wdsT, wds2,wds3,wds4,wds5,wds6,wds9,wds10,wds7,wds8 };

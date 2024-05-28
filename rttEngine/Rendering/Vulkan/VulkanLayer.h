@@ -85,7 +85,7 @@ private:
 
 		});
 	// TODO: ADD IFDEF FOR DIFFERENT PLATFORMS
-	Win64Surface* win64surface = (Win64Surface*)getProcessInfo()->surface;
+	Win64Surface* win64surface = (Win64Surface*)GetProcessInfo()->surface;
 
 	rttvk::SurfaceKHR surface = rttvk::SurfaceKHR();
 	rttvk::Swapchain swapchain = rttvk::Swapchain(&surface, &logicalDevice);
@@ -112,6 +112,12 @@ private:
 	VkDescriptorSetLayoutBinding fontBinding{ 4,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	std::vector<VkDescriptorSetLayoutBinding> setLayout = { imageInput, resBinding,hierarchyCountBinding,hierarchyBinding,fontBinding, albedoInputRT,directInputRT,indirectInputRT,directPrevInputRT,indirectPrevInputRT,direct2InputRT,indirect2InputRT };
 	rttvk::Pipeline pipeline = rttvk::Pipeline(&computeShader,&logicalDevice, setLayout);
+
+	rttvk::Shader temporalShader = rttvk::Shader();
+	std::vector<VkDescriptorSetLayoutBinding> setLayoutT = { directInputRT,indirectInputRT,direct2InputRT,indirect2InputRT,directPrevInputRT,indirectPrevInputRT };
+	rttvk::Pipeline temporal = rttvk::Pipeline(&temporalShader, &logicalDevice, setLayout);
+	VkDescriptorPool descPoolTemporal;
+	VkDescriptorSet descSetTemporal;
 
 	rttvk::Shader atrousShader = rttvk::Shader();
 	std::vector<VkDescriptorSetLayoutBinding> setLayoutAtrous = {directInputRT,indirectInputRT,normalInputRT,worldInputRT,direct2InputRT,indirect2InputRT };

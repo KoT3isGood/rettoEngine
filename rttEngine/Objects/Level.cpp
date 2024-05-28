@@ -31,5 +31,5 @@ void Level::Tick(float deltaTime)
 
 Level* GetCurrentLevel()
 {
-	return getProcessInfo()->level;
+	return GetProcessInfo()->level;
 }

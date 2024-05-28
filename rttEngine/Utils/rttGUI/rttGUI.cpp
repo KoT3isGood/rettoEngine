@@ -62,7 +62,7 @@ bool rttGUIBase::Button(std::string name)
 	currentWindowElement++;
 
 	vec2 mousePosX = vec2(GetMousePosition()[0], GetMousePosition()[1]);
-	vec2 windowPos = vec2(getProcessInfo()->surface->positionY + 7, getProcessInfo()->surface->positionX+31);
+	vec2 windowPos = vec2(GetProcessInfo()->surface->positionY + 7, GetProcessInfo()->surface->positionX+31);
 	vec2 absPos = mousePosX - windowPos;
 
 
