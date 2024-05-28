@@ -12,17 +12,17 @@ layout (binding = 15, rgba32f) uniform image2D indirect2ColorBuffer;
 
 vec3 getDirectPixelColor(ivec2 pos) {
     if (waveletSize%2==0) {
-        return imageLoad(direct2ColorBuffer,ivec2(pos+0.5)).xyz;
+        return imageLoad(direct2ColorBuffer,ivec2(pos)).xyz;
     } else {
-       return  imageLoad(directColorBuffer,ivec2(pos+0.5)).xyz;
+       return  imageLoad(directColorBuffer,ivec2(pos)).xyz;
     }
 };
 
 vec3 getInDirectPixelColor(ivec2 pos) {
     if (waveletSize%2==0) {
-        return imageLoad(indirect2ColorBuffer,ivec2(pos+0.5)).xyz;
+        return imageLoad(indirect2ColorBuffer,ivec2(pos)).xyz;
     } else {
-       return  imageLoad(indirectColorBuffer,ivec2(pos+0.5)).xyz;
+       return  imageLoad(indirectColorBuffer,ivec2(pos)).xyz;
     }
 };
 void main() {

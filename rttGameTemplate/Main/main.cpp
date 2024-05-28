@@ -23,7 +23,7 @@ void Init() {
 
 	Level* level = GetCurrentLevel();
 	level->InitActor(&cam);
-	level->InitActor(&sun);
+	//level->InitActor(&sun);
 	level->InitActor(&testMesh);
 	testMesh.position = vec3(1, 1, 1);
 	RTT_LOG("Inited");

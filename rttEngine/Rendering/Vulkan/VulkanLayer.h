@@ -116,7 +116,7 @@ private:
 
 	rttvk::Shader temporalShader = rttvk::Shader();
 	std::vector<VkDescriptorSetLayoutBinding> setLayoutT = { directInputRT,indirectInputRT,direct2InputRT,indirect2InputRT,directPrevInputRT,indirectPrevInputRT };
-	rttvk::Pipeline temporal = rttvk::Pipeline(&temporalShader, &logicalDevice, setLayout);
+	rttvk::Pipeline temporal = rttvk::Pipeline(&temporalShader, &logicalDevice, setLayoutT);
 	VkDescriptorPool descPoolTemporal;
 	VkDescriptorSet descSetTemporal;
 

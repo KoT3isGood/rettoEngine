@@ -6,5 +6,5 @@ layout(location = 0) rayPayloadInEXT hitPayload prd;
 
 void main() {
     prd.didHit = false;
-    prd.color = vec3(0.7);
+    prd.color = vec3(0.0, 0.0, 0.0);
 }

@@ -91,8 +91,15 @@ void Camera::Tick(float deltaTime)
 
 
 	
+	light.pos[0] = 0;
+	light.pos[1] = 4.5;
+	light.pos[2] = 7;
+	light.size = 1;
 
-	
+	light.color[0] = 10;
+	light.color[1] = 10;
+	light.color[2] = 10;
+	light.Render();
 
 	
 }

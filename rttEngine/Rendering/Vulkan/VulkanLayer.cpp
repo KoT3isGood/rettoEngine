@@ -40,6 +40,10 @@ VulkanLayer::VulkanLayer()
 	atrousShader.Create();
 	atrousPipeline.Create();
 
+	temporalShader = rttvk::Shader("Content/EngineLoad/Shaders/temporal.comp", &logicalDevice, VK_SHADER_STAGE_COMPUTE_BIT);
+	temporalShader.Create();
+	temporal.Create();
+
 	pipeline.Create();
 	computeShader.Destroy();
 
@@ -109,6 +113,16 @@ VulkanLayer::VulkanLayer()
 	allocateInfo.pSetLayouts = &layout;
 
 	VK_CREATE_VALIDATION(vkAllocateDescriptorSets(logicalDevice.GetDevice(), &allocateInfo, &descSetAtrous));
+
+
+	VK_CREATE_VALIDATION(vkCreateDescriptorPool(logicalDevice.GetDevice(), &poolCreateInfo, nullptr, &descPoolTemporal));
+
+	allocateInfo.descriptorPool = descPoolTemporal;
+	allocateInfo.descriptorSetCount = 1;
+	layout = temporal.GetDescriptorLayout();
+	allocateInfo.pSetLayouts = &layout;
+
+	VK_CREATE_VALIDATION(vkAllocateDescriptorSets(logicalDevice.GetDevice(), &allocateInfo, &descSetTemporal));
 
 
 
@@ -732,10 +746,21 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wds5.dstSet = descSetAtrous;
 	wds6.dstSet = descSetAtrous;
 
+
+
 	
 
 	VkWriteDescriptorSet wdssAtrous[] = { wds3,wds4, wds5,wds6, wds7,wds8 };
 	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 6, wdssAtrous, 0, nullptr);
+
+	wds3.dstSet = descSetTemporal;
+	wds4.dstSet = descSetTemporal;
+	wds7.dstSet = descSetTemporal;
+	wds8.dstSet = descSetTemporal;
+	wds9.dstSet = descSetTemporal;
+	wds10.dstSet = descSetTemporal;
+	VkWriteDescriptorSet wdssTemporal[] = { wds3,wds4, wds7,wds8, wds9,wds10 };
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 6, wdssTemporal, 0, nullptr);
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -751,9 +776,13 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	
 	vkCmdTraceRaysKHR(commandBuffer.GetBuffer(), &rgenRegion, &rmissRegion, &rchitRegion, &sbt_null, resolution[0], resolution[1], 1);
 
-	//vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, atrousPipeline.GetPipeline());
-	//vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, atrousPipeline.GetPipelineLayout(), 0, 1, &descSetAtrous, 0, nullptr);
-	/*int atrousSize = 1;
+	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, temporal.GetPipeline());
+	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, temporal.GetPipelineLayout(), 0, 1, &descSetTemporal, 0, nullptr);
+	vkCmdDispatch(commandBuffer.GetBuffer(), resolution[0] / 32.0 + 1, resolution[1] / 32.0 + 1, 1);
+
+	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, atrousPipeline.GetPipeline());
+	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, atrousPipeline.GetPipelineLayout(), 0, 1, &descSetAtrous, 0, nullptr);
+	int atrousSize = 1;
 	vkCmdPushConstants(commandBuffer.GetBuffer(), atrousPipeline.GetPipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, 4, &atrousSize);
 	vkCmdDispatch(commandBuffer.GetBuffer(), resolution[0]/32.0+1, resolution[1] / 32.0 + 1, 1);
 	atrousSize = 2;
@@ -770,7 +799,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	vkCmdDispatch(commandBuffer.GetBuffer(), resolution[0] / 32.0 + 1, resolution[1] / 32.0 + 1, 1);
 	atrousSize = 6;
 	vkCmdPushConstants(commandBuffer.GetBuffer(), atrousPipeline.GetPipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, 4, &atrousSize);
-	vkCmdDispatch(commandBuffer.GetBuffer(), resolution[0] / 32.0 + 1, resolution[1] / 32.0 + 1, 1);*/
+	vkCmdDispatch(commandBuffer.GetBuffer(), resolution[0] / 32.0 + 1, resolution[1] / 32.0 + 1, 1);
 
 
 

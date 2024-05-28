@@ -43,53 +43,53 @@ void main() {
     bool shouldDraw = false;
     vec3 color = vec3(0.0);
     uint currentElement = 0;
-    for(uint i = 0;i<hierarchySize;i++) {
-        uint type = hierarchyBuffer.tree[currentElement];
-        // Every field would have text
-        uint lenght = hierarchyBuffer.tree[currentElement+1];
-        uint lenght4b = uint(ceil(hierarchyBuffer.tree[currentElement+1]/4.0));
-        // Every field would have size
-        ivec2 minSize = ivec2(hierarchyBuffer.tree[currentElement+2+lenght4b],hierarchyBuffer.tree[currentElement+3+lenght4b]);
-        ivec2 maxSize = ivec2(hierarchyBuffer.tree[currentElement+4+lenght4b],hierarchyBuffer.tree[currentElement+5+lenght4b]);
+    // for(uint i = 0;i<hierarchySize;i++) {
+    //     uint type = hierarchyBuffer.tree[currentElement];
+    //     // Every field would have text
+    //     uint lenght = hierarchyBuffer.tree[currentElement+1];
+    //     uint lenght4b = uint(ceil(hierarchyBuffer.tree[currentElement+1]/4.0));
+    //     // Every field would have size
+    //     ivec2 minSize = ivec2(hierarchyBuffer.tree[currentElement+2+lenght4b],hierarchyBuffer.tree[currentElement+3+lenght4b]);
+    //     ivec2 maxSize = ivec2(hierarchyBuffer.tree[currentElement+4+lenght4b],hierarchyBuffer.tree[currentElement+5+lenght4b]);
         
-        if (checkIfInAABB(texCoord*resolution,vec4(minSize,maxSize))) {
-            color = vec3(1.0);
-            if (type == 1) {
+    //     if (checkIfInAABB(texCoord*resolution,vec4(minSize,maxSize))) {
+    //         color = vec3(1.0);
+    //         if (type == 1) {
                 
-                //color = vec3(0.1);
-            } 
-            // this code slows down an entire app
-            if (type == 2 || type == 3) {
-                shouldDraw = true;
-                color = vec3(0.1);
-                if (type == 2) {
-                    color = vec3(0.5,0.5333,0.7333);
-                }
-                for (int h = 0;h<lenght;h++) {
-                    vec2 letterMin = minSize+2+vec2(h*16,0);
-                    vec2 letterMax = minSize+18+vec2(h*16,0);
-                    if(checkIfInAABB(texCoord*resolution,vec4(letterMin,letterMax))) {
-                        uint letterRow = uint(floor(h/4.0));
-                        uint letterColumn = h%4;
-                        uint letterValue = (hierarchyBuffer.tree[currentElement+2+letterRow]>>(3-letterColumn)*8) & (0x000000ff);
-                        uint letterX = (letterValue & 0xf0)>>4;
-                        uint letterY = (letterValue & 0x0f);
-                        vec2 letterTexCoord = (texCoord*resolution-letterMin)/(letterMax-letterMin);
-                        letterTexCoord = (letterTexCoord+vec2(letterY,letterX))/16;
-                        if (texture(fontTexture,letterTexCoord).w>0.5) {
-                            color = vec3(1.0);
-                        }
-                    };
-                };
-            }
+    //             //color = vec3(0.1);
+    //         } 
+    //         // this code slows down an entire app
+    //         if (type == 2 || type == 3) {
+    //             shouldDraw = true;
+    //             color = vec3(0.1);
+    //             if (type == 2) {
+    //                 color = vec3(0.5,0.5333,0.7333);
+    //             }
+    //             for (int h = 0;h<lenght;h++) {
+    //                 vec2 letterMin = minSize+2+vec2(h*16,0);
+    //                 vec2 letterMax = minSize+18+vec2(h*16,0);
+    //                 if(checkIfInAABB(texCoord*resolution,vec4(letterMin,letterMax))) {
+    //                     uint letterRow = uint(floor(h/4.0));
+    //                     uint letterColumn = h%4;
+    //                     uint letterValue = (hierarchyBuffer.tree[currentElement+2+letterRow]>>(3-letterColumn)*8) & (0x000000ff);
+    //                     uint letterX = (letterValue & 0xf0)>>4;
+    //                     uint letterY = (letterValue & 0x0f);
+    //                     vec2 letterTexCoord = (texCoord*resolution-letterMin)/(letterMax-letterMin);
+    //                     letterTexCoord = (letterTexCoord+vec2(letterY,letterX))/16;
+    //                     if (texture(fontTexture,letterTexCoord).w>0.5) {
+    //                         color = vec3(1.0);
+    //                     }
+    //                 };
+    //             };
+    //         }
             
             
-        }
-        currentElement+=6+lenght4b;
-    }
+    //     }
+    //     currentElement+=6+lenght4b;
+    // }
     //vec4 color3 = vec4(imageLoad(albedoColorBuffer,screen_pos).xyz*(imageLoad(directColorBuffer,screen_pos).xyz+imageLoad(indirectColorBuffer,screen_pos).xyz),0.0);
-    vec4 direct=imageLoad(prevDirectColorBuffer,ivec2(screen_pos+0.5)).xyzw*0.8+imageLoad(directColorBuffer,ivec2(screen_pos+0.5)).xyzw*0.2;
-    vec4 indirect=imageLoad(prevIndirectColorBuffer,ivec2(screen_pos+0.5)).xyzw*0.8+imageLoad(indirectColorBuffer,ivec2(screen_pos+0.5)).xyzw*0.2;
+    vec4 direct=imageLoad(directColorBuffer,ivec2(screen_pos+0.5)).xyzw;
+    vec4 indirect=imageLoad(indirectColorBuffer,ivec2(screen_pos+0.5)).xyzw;
     vec4 albedo = imageLoad(albedoColorBuffer,ivec2(screen_pos+0.5));
     vec4 worldPosPrev = imageLoad(worldPosColorBuffer,ivec2(screen_pos+0.5));
     vec4 color3 = vec4(0.0);
@@ -105,8 +105,6 @@ void main() {
     } else {
         imageStore(colorBuffer,screen_pos,color3);
     }
-    imageStore(direct2ColorBuffer,screen_pos,vec4(direct));
-    imageStore(indirect2ColorBuffer,screen_pos,vec4(indirect));
     imageStore(albedoColorBuffer,screen_pos,vec4(color3));
     imageStore(prevWorldPosColorBuffer,screen_pos,vec4(worldPosPrev));
 }
