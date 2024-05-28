@@ -40,6 +40,7 @@ layout (binding = 14, rgba32f) uniform image2D direct2ColorBuffer; // PREVIOUS D
 layout (binding = 15, rgba32f) uniform image2D indirect2ColorBuffer; // PREVIOUS DIRECT INPUT
 layout (binding = 16, rgba32f) uniform image2D prevDirectColorBuffer; // PREVIOUS DIRECT OUTPUT
 layout (binding = 17, rgba32f) uniform image2D prevIndirectColorBuffer; // PREVIOUS INDIRECT OUTPUT
+layout (binding = 18, rgba32f) uniform image2D prevWorldPosColorBuffer; // PREVIOUS WORLD INPUT
 vec3 sampleNoise(vec2 coords) {
   return texture(blueNoiseTexture,coords*resolution.resData.xy/vec2(256)).xyz*2-1;
 };
@@ -227,9 +228,9 @@ void main() {
     };
       
     }
-    //float offset = length(worldPos.xyz-imageLoad(worldPosColorBuffer,ivec2(proj.yx*resolution.resData+0.5)).xyz);
+    float offset = length(worldPos.xyz-imageLoad(prevWorldPosColorBuffer,ivec2(proj.yx*resolution.resData+0.5)).xyz);
    
-    if (proj.x!=-1) {
+    if (proj.x!=-1&&offset<0.5) {
         imageStore(prevDirectColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(imageLoad(direct2ColorBuffer,ivec2(proj.yx*resolution.resData+0.5)).xyz, 1.0));
         imageStore(prevIndirectColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(imageLoad(indirect2ColorBuffer,ivec2(proj.yx*resolution.resData+0.5)).xyz, 1.0));
     } else {

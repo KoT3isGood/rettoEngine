@@ -53,7 +53,7 @@ VulkanLayer::VulkanLayer()
 
 	VkDescriptorPoolSize poolSize = {};
 	poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	poolSize.descriptorCount = 9;
+	poolSize.descriptorCount = 15;
 
 	VkDescriptorPoolSize poolSize2 = {};
 	poolSize2.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -146,7 +146,7 @@ VulkanLayer::VulkanLayer()
 
 	VkDescriptorPoolSize poolSizeRT = {};
 	poolSizeRT.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	poolSizeRT.descriptorCount = 11;
+	poolSizeRT.descriptorCount = 15;
 
 	VkDescriptorPoolSize poolSizeRT2 = {};
 	poolSizeRT2.type = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
@@ -310,6 +310,7 @@ VulkanLayer::VulkanLayer()
 	indirect2.Create();
 	directPrev.Create();
 	indirectPrev.Create();
+	worldPosPrev.Create();
 }
 
 VulkanLayer::~VulkanLayer()
@@ -560,6 +561,18 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wds10.descriptorCount = 1;
 	wds10.pImageInfo = &imageInfo10;
 
+	VkDescriptorImageInfo imageInfo11 = {};
+	imageInfo11.imageView = worldPosPrev.imageView.GetImageView();
+	imageInfo11.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	VkWriteDescriptorSet wds11 = {};
+	wds11.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wds11.dstSet = descSetRT;
+	wds11.dstBinding = 18;
+	wds11.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	wds11.descriptorCount = 1;
+	wds11.pImageInfo = &imageInfo11;
+
 	VkWriteDescriptorSet wdsA = {};
 	wdsA.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	wdsA.dstSet = descSetRT;
@@ -651,9 +664,9 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsT.descriptorCount = GetProcessInfo()->assetRegistry.textures.size();
 	wdsT.pImageInfo = imageInfos.data();
 
-	VkWriteDescriptorSet wdss[] = { wds ,wdsA, wdsRes, wdsNoise,wdsCamPos, wdsLightsCount, wdsLights, wdsMeshes, wdsT, wds2,wds3,wds4,wds5,wds6,wds9,wds10,wds7,wds8 };
+	VkWriteDescriptorSet wdss[] = { wds ,wdsA, wdsRes, wdsNoise,wdsCamPos, wdsLightsCount, wdsLights, wdsMeshes, wdsT, wds2,wds3,wds4,wds5,wds6,wds9,wds10,wds7,wds8,wds11 };
 
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 18, wdss, 0, nullptr);
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 19, wdss, 0, nullptr);
 
 	VkDescriptorBufferInfo amountInfo{};
 	amountInfo.buffer = bufferHierarchyAmount.GetBuffer();
@@ -686,10 +699,12 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wds2.dstSet = descSet;
 	wds3.dstSet = descSet;
 	wds4.dstSet = descSet;
+	wds6.dstSet = descSet;
 	wds7.dstSet = descSet;
 	wds8.dstSet = descSet;
 	wds9.dstSet = descSet;
 	wds10.dstSet = descSet;
+	wds11.dstSet = descSet;
 
 	wdsRes.dstSet = descSet;
 	wdsRes.dstBinding = 1;
@@ -707,8 +722,8 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsFont.descriptorCount = 1;
 	wdsFont.pImageInfo = &fontImageInfo;
 
-	VkWriteDescriptorSet wdss2[] = { wds, wdsRes, wdsAmount, wdsHierarchy,wdsFont, wds2,wds3,wds3,wds4,wds9,wds10,wds7,wds8 };
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 13, wdss2, 0, nullptr);
+	VkWriteDescriptorSet wdss2[] = { wds, wdsRes, wdsAmount, wdsHierarchy,wdsFont, wds2,wds3,wds3,wds4,wds9,wds10,wds7,wds8,wds11,wds6 };
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 15, wdss2, 0, nullptr);
 
 	wds3.dstSet = descSetAtrous;
 	wds4.dstSet = descSetAtrous;
@@ -716,7 +731,6 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wds8.dstSet = descSetAtrous;
 	wds5.dstSet = descSetAtrous;
 	wds6.dstSet = descSetAtrous;
-
 
 	
 

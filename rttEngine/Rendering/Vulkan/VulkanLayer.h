@@ -99,6 +99,7 @@ private:
 	VkDescriptorSetLayoutBinding indirectInputRT{ 11,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	VkDescriptorSetLayoutBinding normalInputRT{ 12,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	VkDescriptorSetLayoutBinding worldInputRT{ 13,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
+	VkDescriptorSetLayoutBinding worldPrevInputRT{ 18,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	VkDescriptorSetLayoutBinding direct2InputRT{ 14,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	VkDescriptorSetLayoutBinding indirect2InputRT{ 15,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	VkDescriptorSetLayoutBinding directPrevInputRT{ 16,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
@@ -110,7 +111,7 @@ private:
 	VkDescriptorSetLayoutBinding hierarchyCountBinding{ 2,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	VkDescriptorSetLayoutBinding hierarchyBinding{ 3,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	VkDescriptorSetLayoutBinding fontBinding{ 4,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,1,VK_SHADER_STAGE_COMPUTE_BIT };
-	std::vector<VkDescriptorSetLayoutBinding> setLayout = { imageInput, resBinding,hierarchyCountBinding,hierarchyBinding,fontBinding, albedoInputRT,directInputRT,indirectInputRT,directPrevInputRT,indirectPrevInputRT,direct2InputRT,indirect2InputRT };
+	std::vector<VkDescriptorSetLayoutBinding> setLayout = { imageInput, resBinding,hierarchyCountBinding,hierarchyBinding,fontBinding, albedoInputRT,directInputRT,indirectInputRT,directPrevInputRT,indirectPrevInputRT,direct2InputRT,indirect2InputRT,worldInputRT,worldPrevInputRT };
 	rttvk::Pipeline pipeline = rttvk::Pipeline(&computeShader,&logicalDevice, setLayout);
 
 	rttvk::Shader temporalShader = rttvk::Shader();
@@ -192,7 +193,7 @@ private:
 	VkDescriptorSetLayoutBinding lightsBindingRT{ 6,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1 };
 	VkDescriptorSetLayoutBinding meshesBindingRT{ 7,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1 };
 	VkDescriptorSetLayoutBinding texturesBindingRT{ 8,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,64 };
-	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInputRT, tlasBinding, resBindingRT, noiseBinding, cameraPosBindingRT,lightsCountBindingRT,lightsBindingRT,meshesBindingRT,texturesBindingRT,albedoInputRT,directInputRT,indirectInputRT,normalInputRT,worldInputRT,directPrevInputRT,indirectPrevInputRT,direct2InputRT,indirect2InputRT };
+	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInputRT, tlasBinding, resBindingRT, noiseBinding, cameraPosBindingRT,lightsCountBindingRT,lightsBindingRT,meshesBindingRT,texturesBindingRT,albedoInputRT,directInputRT,indirectInputRT,normalInputRT,worldInputRT,directPrevInputRT,indirectPrevInputRT,direct2InputRT,indirect2InputRT,worldPrevInputRT };
 
 	PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR;
 
@@ -240,5 +241,6 @@ private:
 	rttvk::Image indirect2 = rttvk::Image(&logicalDevice, 1280, 720, VK_FORMAT_R32G32B32_SFLOAT);
 	rttvk::Image directPrev = rttvk::Image(&logicalDevice, 1280, 720, VK_FORMAT_R32G32B32_SFLOAT);
 	rttvk::Image indirectPrev = rttvk::Image(&logicalDevice, 1280, 720, VK_FORMAT_R32G32B32_SFLOAT);
+	rttvk::Image worldPosPrev = rttvk::Image(&logicalDevice, 1280, 720, VK_FORMAT_R32G32B32_SFLOAT);
 	bool shouldResize = false;
 };

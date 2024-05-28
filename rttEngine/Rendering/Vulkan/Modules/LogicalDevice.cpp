@@ -35,17 +35,12 @@ namespace rttvk {
 		features12.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
 		features12.scalarBlockLayout = VK_TRUE;
 
-		VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR positionFetchFeatures{};
-		positionFetchFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR;
-		positionFetchFeatures.rayTracingPositionFetch = VK_TRUE;
-		positionFetchFeatures.pNext = &features12;
-
 
 		// TODO: Test if extension is enabled and then create features
 		VkPhysicalDeviceBufferAddressFeaturesEXT bufferAddressFeatures{};
 		bufferAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_ADDRESS_FEATURES_EXT;
 		bufferAddressFeatures.bufferDeviceAddress = VK_TRUE;
-		bufferAddressFeatures.pNext = &positionFetchFeatures;
+		bufferAddressFeatures.pNext = &features12;
 
 		VkPhysicalDeviceSynchronization2Features sync2Features{};
 		sync2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;

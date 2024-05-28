@@ -16,10 +16,12 @@ layout(binding = 4) uniform sampler2D fontTexture;
 layout (binding = 9, rgba32f) uniform image2D albedoColorBuffer;
 layout (binding = 10, rgba32f) uniform image2D directColorBuffer;
 layout (binding = 11, rgba32f) uniform image2D indirectColorBuffer;
+layout (binding = 13, rgba32f) uniform image2D worldPosColorBuffer; // WORLD POSITION OUTPUT
 layout (binding = 14, rgba32f) uniform image2D direct2ColorBuffer; // PREVIOUS DIRECT INPUT
 layout (binding = 15, rgba32f) uniform image2D indirect2ColorBuffer; // PREVIOUS DIRECT INPUT
 layout (binding = 16, rgba32f) uniform image2D prevDirectColorBuffer;
 layout (binding = 17, rgba32f) uniform image2D prevIndirectColorBuffer;
+layout (binding = 18, rgba32f) uniform image2D prevWorldPosColorBuffer; // PREVIOUS WORLD INPUT
 
 bool checkIfInAABB(vec2 texcoord, vec4 aabb) {
     return texcoord.x>=aabb.x&&texcoord.y>=aabb.y&&texcoord.x<=aabb.z&&texcoord.y<=aabb.w;
@@ -89,9 +91,10 @@ void main() {
     vec4 direct=imageLoad(prevDirectColorBuffer,ivec2(screen_pos+0.5)).xyzw*0.8+imageLoad(directColorBuffer,ivec2(screen_pos+0.5)).xyzw*0.2;
     vec4 indirect=imageLoad(prevIndirectColorBuffer,ivec2(screen_pos+0.5)).xyzw*0.8+imageLoad(indirectColorBuffer,ivec2(screen_pos+0.5)).xyzw*0.2;
     vec4 albedo = imageLoad(albedoColorBuffer,ivec2(screen_pos+0.5));
+    vec4 worldPosPrev = imageLoad(worldPosColorBuffer,ivec2(screen_pos+0.5));
     vec4 color3 = vec4(0.0);
-    if (albedo.w>0.0) {
-        color3 = vec4(indirect+direct)*albedo;
+     if (albedo.w>0.0) {
+         color3 = vec4(indirect+direct)*albedo;
     } else {
         color3 = vec4(albedo);
     }
@@ -105,4 +108,5 @@ void main() {
     imageStore(direct2ColorBuffer,screen_pos,vec4(direct));
     imageStore(indirect2ColorBuffer,screen_pos,vec4(indirect));
     imageStore(albedoColorBuffer,screen_pos,vec4(color3));
+    imageStore(prevWorldPosColorBuffer,screen_pos,vec4(worldPosPrev));
 }

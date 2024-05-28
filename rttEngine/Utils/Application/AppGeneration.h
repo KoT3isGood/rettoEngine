@@ -12,12 +12,12 @@
 #define CREATE_GAME(appinfo) \
 void Init(); \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow){\
-getProcessInfo()->argc = __argc; \
-getProcessInfo()->argv = __argv; \
-getProcessInfo()->appInfo = &appInfo; \
+GetProcessInfo()->argc = __argc; \
+GetProcessInfo()->argv = __argv; \
+GetProcessInfo()->appInfo = &appInfo; \
 Win64Surface surface = Win64Surface(appInfo.name); \
 Level currentLevel = Level(); \
-getProcessInfo()->level = &currentLevel; \
+GetProcessInfo()->level = &currentLevel; \
 Init(); \
 surface.StartUpdateLoop(); \
 return 0; \
@@ -26,11 +26,11 @@ return 0; \
 #define CREATE_GAME(appinfo) \
 void Init(); \
 int main(int argc, char* argv[]) { \
-getProcessInfo()->argc = argc; \
-getProcessInfo()->argv = argv; \
-getProcessInfo()->appInfo = &appInfo; \
+GetProcessInfo()->argc = argc; \
+GetProcessInfo()->argv = argv; \
+GetProcessInfo()->appInfo = &appInfo; \
 Level currentLevel = Level(); \
-getProcessInfo()->level = &currentLevel; \
+GetProcessInfo()->level = &currentLevel; \
 Win64Surface surface = Win64Surface(appInfo.name); \
 Init(); \
 surface.StartUpdateLoop(); \

@@ -1,7 +1,6 @@
 #version 460
 
 #extension GL_GOOGLE_include_directive: enable
-#extension GL_EXT_ray_tracing_position_fetch: enable
 #include "similar.glsl"
 
 layout(location = 0) rayPayloadInEXT hitPayload prd;
@@ -19,12 +18,9 @@ layout(binding = 8) uniform sampler2D meshTextures[];
 void main() {
     
 
-    vec3 vertex1 = gl_HitTriangleVertexPositionsEXT[0];
-    vec3 vertex2 = gl_HitTriangleVertexPositionsEXT[1];
-    vec3 vertex3 = gl_HitTriangleVertexPositionsEXT[2];
+   
 
 
-    vec3 normal = -normalize(cross(vertex3-vertex1,vertex2-vertex1));
 
     ObjectData objData = objDesc.i[gl_InstanceCustomIndexEXT];
     Indexes    indexes    = Indexes(objData.indexBufferAddr);
@@ -34,10 +30,14 @@ void main() {
     Materials    materials    = Materials(objData.materialBufferAddr);
     MaterialIndexes   materialIndexes    = MaterialIndexes(objData.materialIndexBufferAddr);
 
+    
+
     ivec3 ind = indexes.i[gl_PrimitiveID];
     vec3 v0 = vertices.v[ind.x];
     vec3 v1 = vertices.v[ind.y];
     vec3 v2 = vertices.v[ind.z];
+
+    vec3 normal = -normalize(cross(v2-v0,v1-v0));
 
     ivec3 tind = uvIndexes.i[gl_PrimitiveID];
     vec3 vt0 = vec3(uvs.v[tind.x],0.0);
@@ -66,6 +66,6 @@ void main() {
     vec3 texColor = texture(meshTextures[nonuniformEXT(currentTexture)],vec2(uv.x,-uv.y)).xyz;
     prd.color = texColor;
     prd.normal = normal;
-    prd.triPos = mat3(vertex1,vertex2,vertex3);
+    prd.triPos = mat3(v0,v1,v2);
     prd.triUV = mat3x3(vt0,vt1,vt2);
 }
