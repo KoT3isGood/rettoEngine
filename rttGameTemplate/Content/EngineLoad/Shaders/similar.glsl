@@ -17,6 +17,8 @@ struct hitPayload
   int instance;
   int triangle;
   vec3 normal;
+  mat3x3 triPos;
+  mat3x3 triUV;
 
   //Material
   vec3 color;
@@ -41,3 +43,24 @@ struct ObjectData {
 	uint64_t materialIndexBufferAddr;
 };
 
+vec3
+compute_barycentric(mat3 v, vec3 ray_origin, vec3 ray_direction)
+{
+	vec3 edge1 = v[1] - v[0];
+	vec3 edge2 = v[2] - v[0];
+
+	vec3 pvec = cross(ray_direction, edge2);
+
+	float det = dot(edge1, pvec);
+	float inv_det = 1.0f / det;
+
+	vec3 tvec = ray_origin - v[0];
+
+	float alpha = dot(tvec, pvec) * inv_det;
+
+	vec3 qvec = cross(tvec, edge1);
+
+	float beta = dot(ray_direction, qvec) * inv_det;
+
+	return vec3(1.f - alpha - beta, alpha, beta);
+}

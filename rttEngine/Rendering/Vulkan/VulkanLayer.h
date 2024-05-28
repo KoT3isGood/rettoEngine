@@ -67,7 +67,7 @@ private:
 
 		},{
 			//"VK_LAYER_LUNARG_api_dump",
-			//"VK_LAYER_KHRONOS_validation"
+			"VK_LAYER_KHRONOS_validation"
 		});
 
 	rttvk::DebugMessenger debugMessenger = rttvk::DebugMessenger(&instance);
@@ -101,6 +101,8 @@ private:
 	VkDescriptorSetLayoutBinding worldInputRT{ 13,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	VkDescriptorSetLayoutBinding direct2InputRT{ 14,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	VkDescriptorSetLayoutBinding indirect2InputRT{ 15,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
+	VkDescriptorSetLayoutBinding directPrevInputRT{ 16,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
+	VkDescriptorSetLayoutBinding indirectPrevInputRT{ 17,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
 
 	rttvk::Shader computeShader = rttvk::Shader();
 	VkDescriptorSetLayoutBinding imageInput{ 0,VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,1,VK_SHADER_STAGE_COMPUTE_BIT };
@@ -108,7 +110,7 @@ private:
 	VkDescriptorSetLayoutBinding hierarchyCountBinding{ 2,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	VkDescriptorSetLayoutBinding hierarchyBinding{ 3,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1,VK_SHADER_STAGE_COMPUTE_BIT };
 	VkDescriptorSetLayoutBinding fontBinding{ 4,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,1,VK_SHADER_STAGE_COMPUTE_BIT };
-	std::vector<VkDescriptorSetLayoutBinding> setLayout = { imageInput, resBinding,hierarchyCountBinding,hierarchyBinding,fontBinding, albedoInputRT,directInputRT,indirectInputRT };
+	std::vector<VkDescriptorSetLayoutBinding> setLayout = { imageInput, resBinding,hierarchyCountBinding,hierarchyBinding,fontBinding, albedoInputRT,directInputRT,indirectInputRT,directPrevInputRT,indirectPrevInputRT,direct2InputRT,indirect2InputRT };
 	rttvk::Pipeline pipeline = rttvk::Pipeline(&computeShader,&logicalDevice, setLayout);
 
 	rttvk::Shader atrousShader = rttvk::Shader();
@@ -130,7 +132,7 @@ private:
 
 	rttvk::Buffer buffer = rttvk::Buffer(&logicalDevice,8,VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 	rttvk::Buffer bufferHierarchyAmount = rttvk::Buffer(&logicalDevice, 4, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-	rttvk::Buffer cameraPositionBuffer = rttvk::Buffer(&logicalDevice, 48, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+	rttvk::Buffer cameraPositionBuffer = rttvk::Buffer(&logicalDevice, 48*2, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
 	float pos[3][4] = {-5,0,0,0};
 
@@ -170,7 +172,6 @@ private:
 private:
 
 	// Ray tracing
-
 	rttvk::Shader rayGenShader = rttvk::Shader();
 	rttvk::Shader missShader = rttvk::Shader();
 	rttvk::Shader closestHitShader = rttvk::Shader();
@@ -185,7 +186,7 @@ private:
 	VkDescriptorSetLayoutBinding lightsBindingRT{ 6,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1 };
 	VkDescriptorSetLayoutBinding meshesBindingRT{ 7,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1 };
 	VkDescriptorSetLayoutBinding texturesBindingRT{ 8,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,64 };
-	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInputRT, tlasBinding, resBindingRT, noiseBinding, cameraPosBindingRT,lightsCountBindingRT,lightsBindingRT,meshesBindingRT,texturesBindingRT,albedoInputRT,directInputRT,indirectInputRT,normalInputRT,worldInputRT };
+	std::vector<VkDescriptorSetLayoutBinding> rtSetLayout = { imageInputRT, tlasBinding, resBindingRT, noiseBinding, cameraPosBindingRT,lightsCountBindingRT,lightsBindingRT,meshesBindingRT,texturesBindingRT,albedoInputRT,directInputRT,indirectInputRT,normalInputRT,worldInputRT,directPrevInputRT,indirectPrevInputRT,direct2InputRT,indirect2InputRT };
 
 	PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR;
 
@@ -231,4 +232,7 @@ private:
 	rttvk::Image worldPos = rttvk::Image(&logicalDevice, 1280, 720, VK_FORMAT_R32G32B32_SFLOAT);
 	rttvk::Image direct2 = rttvk::Image(&logicalDevice, 1280, 720, VK_FORMAT_R32G32B32_SFLOAT);
 	rttvk::Image indirect2 = rttvk::Image(&logicalDevice, 1280, 720, VK_FORMAT_R32G32B32_SFLOAT);
+	rttvk::Image directPrev = rttvk::Image(&logicalDevice, 1280, 720, VK_FORMAT_R32G32B32_SFLOAT);
+	rttvk::Image indirectPrev = rttvk::Image(&logicalDevice, 1280, 720, VK_FORMAT_R32G32B32_SFLOAT);
+	bool shouldResize = false;
 };

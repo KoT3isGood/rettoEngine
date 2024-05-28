@@ -11,12 +11,20 @@ AppInfo appInfo{
 CREATE_GAME(appInfo)
 
 #include "Objects\Level.h"
-#include "MeshTest.h"
+#include "Camera.h"
+#include <Sun.h>
+#include <StaticMesh.h>
 
-MeshTest meshTest = MeshTest();
+Camera cam = Camera();
+Sun sun = Sun();
+StaticMesh testMesh = StaticMesh();
 
 void Init() {
+
 	Level* level = GetCurrentLevel();
-	level->InitActor(&meshTest);
+	level->InitActor(&cam);
+	level->InitActor(&sun);
+	level->InitActor(&testMesh);
+	testMesh.position = vec3(1, 1, 1);
 	RTT_LOG("Inited");
 };

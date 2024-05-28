@@ -9,9 +9,9 @@
 #include "Utils\rttGUI\rttGUI.h"
 #include "Rendering\Vulkan\VulkanLayer.h"
 
-class MeshTest : public Actor {
+class Camera : public Actor {
 public:
-	MeshTest();
+	Camera();
 	virtual void Tick(float deltaTime) override;
 	float time=0.0;
 	float time2 = 0.0;
@@ -19,6 +19,7 @@ private:
 	bool previousState = false;
 	bool shouldDraw = true;
 	Mesh mesh = Mesh();
+	Mesh mesh2 = Mesh();
 	Light light = Light();
 	vec3 cameraPos = vec3(0.0);
 	vec2 cameraRotation = vec2(0.0);
@@ -26,4 +27,5 @@ private:
 	bool shouldLockMouse = false;
 	bool shouldLockMousePrev = false;
 	bool isPressingEsc = false;
+	vec3 randomVal;
 };

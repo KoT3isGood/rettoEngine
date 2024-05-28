@@ -33,6 +33,7 @@ namespace rttvk {
 		features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
 		features12.runtimeDescriptorArray = VK_TRUE;
 		features12.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+		features12.scalarBlockLayout = VK_TRUE;
 
 		VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR positionFetchFeatures{};
 		positionFetchFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR;

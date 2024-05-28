@@ -6,9 +6,11 @@ layout (binding = 0, rgba8) uniform image2D colorBuffer;
 layout (binding = 1) uniform accelerationStructureEXT topLevelAS;
 layout (binding = 2) uniform res {
   vec2 resData;
+  float time;
 } resolution;
 layout (binding = 4) uniform cameraPosBinding {
   mat3x4 cameraPos;
+  mat3x4 prevCameraPos;
 } camera;
 layout (binding = 5) uniform lightsCountBinding {
   uint count;
@@ -29,11 +31,15 @@ layout(location = 0) rayPayloadEXT hitPayload prd;
 layout(location = 1) rayPayloadEXT bool shadow;
 
 layout(binding = 3) uniform sampler2D blueNoiseTexture;
-layout (binding = 9, rgba32f) uniform image2D albedoColorBuffer;
-layout (binding = 10, rgba32f) uniform image2D directColorBuffer;
-layout (binding = 11, rgba32f) uniform image2D indirectColorBuffer;
-layout (binding = 12, rgba32f) uniform image2D normalColorBuffer;
-layout (binding = 13, rgba32f) uniform image2D worldPosColorBuffer;
+layout (binding = 9, rgba32f) uniform image2D albedoColorBuffer; // ALBEDO
+layout (binding = 10, rgba32f) uniform image2D directColorBuffer; // DIRECT OUTPUT
+layout (binding = 11, rgba32f) uniform image2D indirectColorBuffer; // INDIRECT OUTPUT
+layout (binding = 12, rgba32f) uniform image2D normalColorBuffer; // NORMAL OUTPUT
+layout (binding = 13, rgba32f) uniform image2D worldPosColorBuffer; // WORLD POSITION OUTPUT
+layout (binding = 14, rgba32f) uniform image2D direct2ColorBuffer; // PREVIOUS DIRECT INPUT
+layout (binding = 15, rgba32f) uniform image2D indirect2ColorBuffer; // PREVIOUS DIRECT INPUT
+layout (binding = 16, rgba32f) uniform image2D prevDirectColorBuffer; // PREVIOUS DIRECT OUTPUT
+layout (binding = 17, rgba32f) uniform image2D prevIndirectColorBuffer; // PREVIOUS INDIRECT OUTPUT
 vec3 sampleNoise(vec2 coords) {
   return texture(blueNoiseTexture,coords*resolution.resData.xy/vec2(256)).xyz*2-1;
 };
@@ -50,7 +56,20 @@ float randomValue(inout uint state) {
     return result / 4294967295.0;
 }
 
-
+vec3 triIntersect( in vec3 ro, in vec3 rd, in vec3 v0, in vec3 v1, in vec3 v2 )
+{
+    vec3 v1v0 = v1 - v0;
+    vec3 v2v0 = v2 - v0;
+    vec3 rov0 = ro - v0;
+    vec3  n = cross( v1v0, v2v0 );
+    vec3  q = cross( rov0, rd );
+    float d = 1.0/dot( rd, n );
+    float u = d*dot( -q, v2v0 );
+    float v = d*dot(  q, v1v0 );
+    float t = d*dot( -n, rov0 );
+    if( u<0.0 || v<0.0 || (u+v)>1.0 ) t = -1.0;
+    return vec3( t, u, v );
+}
 
 void main() {
 
@@ -65,10 +84,11 @@ void main() {
     //vec3 origin = vec3(-11.4,9.2,4.2);
     vec3 origin = vec3(camera.cameraPos[0].w,camera.cameraPos[1].w,camera.cameraPos[2].w);
     mat3x3 matrix = mat3x3(camera.cameraPos[0].xyz,-camera.cameraPos[1].xyz,camera.cameraPos[2].xyz);
+    mat3x3 matrix2 = mat3x3(camera.prevCameraPos[0].xyz,-camera.prevCameraPos[1].xyz,camera.prevCameraPos[2].xyz);
     //vec3 origin = vec3(-4,0,0);
 
     uvec2 pixelCoord = gl_LaunchIDEXT.xy;
-    uint pixelIndex = uint(pixelCoord.y*resolution.resData.x+pixelCoord.x);
+    uint pixelIndex = uint(pixelCoord.y*resolution.resData.x+pixelCoord.x)+uint(resolution.time*10000);
 
     vec3 direction = normalize(vec3(1,-texCoords))*matrix;
 
@@ -78,6 +98,10 @@ void main() {
     vec3 normal = vec3(0.0);
     vec3 worldPos = vec3(0.0);
     vec3 shadowColor = vec3(0.0);
+    vec2 tex_coord = vec2(0);
+    float depth = 0.0;
+    mat3x3 hitTriangle = mat3x3(0);
+    mat3x3 hitTriangleTex = mat3x3(0);
     // We trace albedo rays
     
     for (int i = 0;i<2;i++) {
@@ -99,13 +123,18 @@ void main() {
           distanceRay,           // ray max range
           0               // payload (location = 0)
       );
+     
+    if (prd.didHit) {
       if (i==0) {
+        tex_coord = prd.uv;
+        hitTriangleTex = prd.triUV;
+        hitTriangle = prd.triPos;
+        depth = prd.depth;
         albedo = prd.color;
         normal = prd.normal*0.5+0.5;
-        worldPos = normalize(prd.hitPos-origin)*0.5+0.5;
+        worldPos = prd.hitPos;
+         
       }
-    if (prd.didHit) {
-        
         float bucketStrength = 0.0;
       
         vec3 directionToSample = vec3(0.0);
@@ -117,12 +146,12 @@ void main() {
         for (uint light =0;light<lightsCount.count;light++){
 
         
-        vec3 sampleCoords = sampleSphere(coords);
+        vec3 sampleCoords = sampleSphere(coords-randomValue(pixelIndex));
         vec3 spherePos = sampleCoords*-sign(dot(sampleCoords,prd.normal))*lights[light].size+lights[light].pos;
         vec3 directionToSpherePos = normalize(prd.hitPos-spherePos);
         float lenght = sqrt(dot(prd.hitPos-spherePos,prd.hitPos-spherePos));
         float cosine = dot(-directionToSpherePos,prd.normal);
-        float outputValue = 2*3.1415926*dot(lights[light].color,vec3(0.299,0.587,0.114))*lights[light].size*lights[light].size*cosine/(lenght*lenght);
+        float outputValue = 2*3.1415926*dot(lights[light].color,vec3(0.299,0.587,0.114))*cosine/(lenght*lenght);
 
         float random = float(randomValue(pixelIndex)*(outputValue+bucketStrength));
         if (random>bucketStrength) {
@@ -162,15 +191,54 @@ void main() {
         
       }
     } else {
+      color *= prd.color;
+      incominglight+=prd.color;
+      if (i==0) {
+      shadowColor = vec3(1.0);
+      albedo = prd.color;
+      }
       break;
     }
     origin = prd.hitPos;
-    direction = normalize(prd.normal+sampleSphere(coords));
+    direction = normalize(prd.normal+sampleSphere(coords+randomValue(pixelIndex)));
     }
 
-    imageStore(albedoColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(albedo, 1.0));
+    vec3 v0 = vec3(1,resolution.resData.x/resolution.resData.y*0.5,0.5)*matrix2;
+    vec3 v1 = vec3(1,resolution.resData.x/resolution.resData.y*0.5,-0.5)*matrix2;
+    vec3 v2 = vec3(1,-resolution.resData.x/resolution.resData.y*0.5,0.5)*matrix2;
+    vec3 v3 = vec3(1,-resolution.resData.x/resolution.resData.y*0.5,-0.5)*matrix2;
+
+  
+    vec3 origin2 = vec3(camera.prevCameraPos[0].w,camera.prevCameraPos[1].w,camera.prevCameraPos[2].w);
+   
+    origin = vec3(0.0);
+    direction = normalize(vec3(1,-texCoords))*matrix;
+    vec3 proj = vec3(-1.0);
+     if (camera.prevCameraPos==camera.cameraPos) {
+      proj.yx=coords;
+    } else {
+          vec3 result = triIntersect(origin,direction,v0,v1,v2);
+    if (result.x>=0.0) {
+      proj = vec3(result.y,result.z,0.0);
+    };
+    result = triIntersect(origin,direction,v1,v2,v3);
+    if (result.x>=0.0) {
+      proj = vec3(result.y*vec3(0,1,0)+result.z*vec3(1,1,0)+(1-result.y-result.z)*vec3(1,0,0));
+    };
+      
+    }
+    //float offset = length(worldPos.xyz-imageLoad(worldPosColorBuffer,ivec2(proj.yx*resolution.resData+0.5)).xyz);
+   
+    if (proj.x!=-1) {
+        imageStore(prevDirectColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(imageLoad(direct2ColorBuffer,ivec2(proj.yx*resolution.resData+0.5)).xyz, 1.0));
+        imageStore(prevIndirectColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(imageLoad(indirect2ColorBuffer,ivec2(proj.yx*resolution.resData+0.5)).xyz, 1.0));
+    } else {
+      imageStore(prevDirectColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(0.0));
+      imageStore(prevIndirectColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(0.0));
+    }
+    imageStore(albedoColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(albedo, depth));
     imageStore(directColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(shadowColor, 1.0));
     imageStore(indirectColorBuffer,ivec2(gl_LaunchIDEXT.xy),vec4(incominglight, 1.0));
     imageStore(normalColorBuffer,ivec2(gl_LaunchIDEXT),vec4(normal,0.0));
-    imageStore(worldPosColorBuffer,ivec2(gl_LaunchIDEXT),vec4(worldPos,0.0));
+    imageStore(worldPosColorBuffer,ivec2(gl_LaunchIDEXT),vec4(worldPos,depth));
 } 

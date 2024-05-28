@@ -7,9 +7,11 @@ namespace rttvk {
 	public:
 		ImageView() = default;
 		ImageView(LogicalDevice* device, VkImage image);
+		ImageView(LogicalDevice* device, VkImage image, VkFormat format);
 		virtual void Create() override;
 		virtual void Destroy() override;
 		VkImageView GetImageView();
+		VkFormat format;
 	private:
 		VkImage image;
 		LogicalDevice* device;

@@ -60,15 +60,12 @@ void main() {
     prd.hitPos = worldPos;
     prd.depth = gl_HitTEXT-0.001;
 
+    
      prd.color = vec3(0.0);
     uint currentTexture = materials.m[materialIndexes.im[gl_PrimitiveID]].albedoTexture;
     vec3 texColor = texture(meshTextures[nonuniformEXT(currentTexture)],vec2(uv.x,-uv.y)).xyz;
     prd.color = texColor;
-
-    prd.roughness = gl_InstanceCustomIndexEXT*0.5;
-    if (gl_InstanceCustomIndexEXT*0.5==0.5) {
-        prd.roughness = 0.1;
-    }
-    
     prd.normal = normal;
+    prd.triPos = mat3(vertex1,vertex2,vertex3);
+    prd.triUV = mat3x3(vt0,vt1,vt2);
 }

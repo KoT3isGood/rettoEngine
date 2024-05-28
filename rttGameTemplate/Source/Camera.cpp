@@ -1,13 +1,14 @@
-#include "MeshTest.h"
+#include "Camera.h"
 
 
-MeshTest::MeshTest()
+Camera::Camera()
 {
 	RTT_LOG("Inited");
-	cameraPos = vec3(0.7, 20, 9);
+	cameraPos = vec3(0.7, 0, 9);
+	
 }
 
-void MeshTest::Tick(float deltaTime)
+void Camera::Tick(float deltaTime)
 {
 	// DATA PERFOMANCE
 	time += deltaTime;
@@ -74,59 +75,24 @@ void MeshTest::Tick(float deltaTime)
 		};
 	}
 
+
+
 	getProcessInfo()->camera[0][3] = cameraPos.x;
 	getProcessInfo()->camera[1][3] = cameraPos.y;
 	getProcessInfo()->camera[2][3] = cameraPos.z;
 
+	mat3x3 cube = getMatrixFromRotation(cameraRotation.y, cameraRotation.x, 0.0);
+	cube *= vec3(0.5, 0.5, 0.5);
+	mat3x3 cube2 = matrixYaw * matrixPitch;
+	vec3 cubeRelativePos = cube2 * (vec3(1, 0.5, -1));
+
 
 	rttGUI()->Text("Camera position: " + std::to_string(getProcessInfo()->camera[0][3])+", "+ std::to_string(getProcessInfo()->camera[1][3]) +", " + std::to_string(getProcessInfo()->camera[2][3]));
-	
-	for (int i = 0; i < 10;i++) {
-
-		mesh.pos[0] = i * 40;
-		mesh.pos[1] = 0;
-		mesh.pos[2] = 0;
-		mesh.instanceID = 2;
-		mesh.Render();
-	}
 
 
 	
 
 	
-	/*if (IsGameActive()) {
-		if (IsKeyDown(0x01)) {*/
-			//vec3 lightPos = cameraPos + matrixYaw * matrixPitch * vec3(1.0, 0.5, -0.25);
-			
-	/*	}
-	}*/
-	/*light.pos[0] = sin(time*0.5)*10;
-	light.pos[1] = 20;
-	light.pos[2] = 6;
-	light.size = 0.5;
 
-	light.color[0] = 1.000000 * 10;
-	light.color[1] = 0.850980 * 10;
-	light.color[2] = 0.713725 * 10;
-	light.Render();*/
-
-	light.pos[0] = sin(time * 0.5+3.14) * 9;
-	light.pos[1] = 20;
-	light.pos[2] = 6;
-	light.size = 1;
-
-	light.color[0] = 1.000000 * 10;
-	light.color[1] = 0.2 * 10;
-	light.color[2] = 0.2 * 10;
-	light.Render();
-
-	light.pos[0] = 20;
-	light.pos[1] = 20;
-	light.pos[2] = 100;
-	light.size = 1;
-
-	light.color[0] = 1.000000 * 1000;
-	light.color[1] = 1.0 * 1000;
-	light.color[2] = 1.0 * 1000;
-	light.Render();
+	
 }

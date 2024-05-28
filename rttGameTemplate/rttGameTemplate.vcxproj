@@ -129,11 +129,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main\main.cpp" />
-    <ClCompile Include="Source\MeshTest.cpp" />
+    <ClCompile Include="Source\Camera.cpp" />
+    <ClCompile Include="Source\StaticMesh.cpp" />
+    <ClCompile Include="Source\Sun.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main\SetProperties.h" />
-    <ClInclude Include="Source\MeshTest.h" />
+    <ClInclude Include="Source\Camera.h" />
+    <ClInclude Include="Source\StaticMesh.h" />
+    <ClInclude Include="Source\Sun.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

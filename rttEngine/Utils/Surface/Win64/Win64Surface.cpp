@@ -83,7 +83,7 @@ void Win64Surface::StartUpdateLoop()
 		
 		GetCurrentLevel()->Tick(delta);
 
-		timeToTitleUpdate += delta;
+		time += delta;
 		/*if (timeToTitleUpdate>=1.0f ) {
 			timeToTitleUpdate = 0;
 			float fps = 1 / delta;
@@ -107,7 +107,7 @@ void Win64Surface::StartUpdateLoop()
 		// Loop
 		if (PeekMessage(&msg, NULL, NULL, NULL, PM_REMOVE)) {
 			TranslateMessage(&msg);;
-			DispatchMessageW(&msg);
+			DispatchMessageW(&msg);	
 		}
 		vkLayer->Draw();
 

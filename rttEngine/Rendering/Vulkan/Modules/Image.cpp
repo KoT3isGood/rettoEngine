@@ -31,6 +31,7 @@ namespace rttvk {
 		imageInfo.usage = VK_IMAGE_USAGE_STORAGE_BIT;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
 		VK_CREATE_VALIDATION(vkCreateImage(device->GetDevice(), &imageInfo, nullptr, &textureImage));
 
 		VkMemoryRequirements memRequirements;
@@ -45,7 +46,7 @@ namespace rttvk {
 
 		vkBindImageMemory(device->GetDevice(), textureImage, textureImageMemory, 0);
 
-		imageView = ImageView(device, textureImage);
+		imageView = ImageView(device, textureImage, VK_FORMAT_R32G32B32A32_SFLOAT);
 		imageView.Create();
 
 		VkSamplerCreateInfo samplerInfo{};

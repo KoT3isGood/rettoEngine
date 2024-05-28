@@ -10,12 +10,17 @@
 #include "Utils/Surface/Win64/Win64Surface.h"
 #ifdef ReleaseRTT
 #define CREATE_GAME(appinfo) \
+void Init(); \
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow){\
 getProcessInfo()->argc = __argc; \
 getProcessInfo()->argv = __argv; \
 getProcessInfo()->appInfo = &appInfo; \
 Win64Surface surface = Win64Surface(appInfo.name); \
-surface.StartUpdateLoop(); return 0; \
+Level currentLevel = Level(); \
+getProcessInfo()->level = &currentLevel; \
+Init(); \
+surface.StartUpdateLoop(); \
+return 0; \
 }; 
 #else
 #define CREATE_GAME(appinfo) \

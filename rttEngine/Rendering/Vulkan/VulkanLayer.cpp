@@ -53,7 +53,7 @@ VulkanLayer::VulkanLayer()
 
 	VkDescriptorPoolSize poolSize = {};
 	poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	poolSize.descriptorCount = 5;
+	poolSize.descriptorCount = 9;
 
 	VkDescriptorPoolSize poolSize2 = {};
 	poolSize2.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -112,7 +112,7 @@ VulkanLayer::VulkanLayer()
 
 
 
-	resolutionBuffer = rttvk::Buffer(&logicalDevice, sizeof(resolution), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+	resolutionBuffer = rttvk::Buffer(&logicalDevice, 12, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 	resolutionBuffer.Create();
 	
 
@@ -146,7 +146,7 @@ VulkanLayer::VulkanLayer()
 
 	VkDescriptorPoolSize poolSizeRT = {};
 	poolSizeRT.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	poolSizeRT.descriptorCount = 7;
+	poolSizeRT.descriptorCount = 11;
 
 	VkDescriptorPoolSize poolSizeRT2 = {};
 	poolSizeRT2.type = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
@@ -308,8 +308,8 @@ VulkanLayer::VulkanLayer()
 	normal.Create();
 	direct2.Create();
 	indirect2.Create();
-	ResetMeshes();
-
+	directPrev.Create();
+	indirectPrev.Create();
 }
 
 VulkanLayer::~VulkanLayer()
@@ -405,8 +405,9 @@ void VulkanLayer::ChangeImageLayout(VkImage image, VkImageLayout oldLayout, VkIm
 
 void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 {
-
 	
+	memcpy((void*)((uint64_t)cameraPositionBuffer.GetMapped()+48), pos, 48);
+
 	pos[0][0] = getProcessInfo()->camera[0][0];
 	pos[0][1] = getProcessInfo()->camera[0][1];
 	pos[0][2] = getProcessInfo()->camera[0][2];
@@ -425,9 +426,9 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 
 
 
-
 	// Ray tracing pipeline
 	memcpy(resolutionBuffer.GetMapped(), resolution, sizeof(resolution));
+	memcpy((void*)((uint64_t)resolutionBuffer.GetMapped()+8), &win64surface->time,4);
 
 
 	// TODO: Move this into constructor
@@ -510,6 +511,55 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsAc.accelerationStructureCount = 1;
 	wdsAc.pAccelerationStructures = tlas.GetAccelerationStructure();
 
+	VkDescriptorImageInfo imageInfo7 = {};
+	imageInfo7.imageView = direct2.imageView.GetImageView();
+	imageInfo7.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	VkWriteDescriptorSet wds7 = {};
+	wds7.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wds7.dstSet = descSetRT;
+	wds7.dstBinding = 14;
+	wds7.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	wds7.descriptorCount = 1;
+	wds7.pImageInfo = &imageInfo7;
+
+
+	VkDescriptorImageInfo imageInfo8 = {};
+	imageInfo8.imageView = indirect2.imageView.GetImageView();
+	imageInfo8.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	VkWriteDescriptorSet wds8 = {};
+	wds8.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wds8.dstSet = descSetRT;
+	wds8.dstBinding = 15;
+	wds8.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	wds8.descriptorCount = 1;
+	wds8.pImageInfo = &imageInfo8;
+
+	VkDescriptorImageInfo imageInfo9 = {};
+	imageInfo9.imageView = directPrev.imageView.GetImageView();
+	imageInfo9.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	VkWriteDescriptorSet wds9 = {};
+	wds9.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wds9.dstSet = descSetRT;
+	wds9.dstBinding = 16;
+	wds9.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	wds9.descriptorCount = 1;
+	wds9.pImageInfo = &imageInfo9;
+
+	VkDescriptorImageInfo imageInfo10 = {};
+	imageInfo10.imageView = indirectPrev.imageView.GetImageView();
+	imageInfo10.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+	VkWriteDescriptorSet wds10 = {};
+	wds10.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	wds10.dstSet = descSetRT;
+	wds10.dstBinding = 17;
+	wds10.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	wds10.descriptorCount = 1;
+	wds10.pImageInfo = &imageInfo10;
+
 	VkWriteDescriptorSet wdsA = {};
 	wdsA.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	wdsA.dstSet = descSetRT;
@@ -520,7 +570,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 
 	VkDescriptorBufferInfo resolutionInfo{};
 	resolutionInfo.buffer = resolutionBuffer.GetBuffer();
-	resolutionInfo.range = sizeof(resolution);
+	resolutionInfo.range = 12;
 
 
 	VkWriteDescriptorSet wdsRes = {};
@@ -546,7 +596,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 
 	VkDescriptorBufferInfo camPosInfo{};
 	camPosInfo.buffer = cameraPositionBuffer.GetBuffer();
-	camPosInfo.range = 48;
+	camPosInfo.range = 48*2;
 
 
 	VkWriteDescriptorSet wdsCamPos = {};
@@ -601,9 +651,9 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsT.descriptorCount = getProcessInfo()->assetRegistry.textures.size();
 	wdsT.pImageInfo = imageInfos.data();
 
-	VkWriteDescriptorSet wdss[] = { wds ,wdsA, wdsRes, wdsNoise,wdsCamPos, wdsLightsCount, wdsLights, wdsMeshes, wdsT, wds2,wds3,wds4,wds5,wds6 };
+	VkWriteDescriptorSet wdss[] = { wds ,wdsA, wdsRes, wdsNoise,wdsCamPos, wdsLightsCount, wdsLights, wdsMeshes, wdsT, wds2,wds3,wds4,wds5,wds6,wds9,wds10,wds7,wds8 };
 
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 14, wdss, 0, nullptr);
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 18, wdss, 0, nullptr);
 
 	VkDescriptorBufferInfo amountInfo{};
 	amountInfo.buffer = bufferHierarchyAmount.GetBuffer();
@@ -620,7 +670,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsAmount.pBufferInfo = &amountInfo;
 
 	VkDescriptorBufferInfo hierarchyInfo{};
-	hierarchyInfo.buffer = rttGUIDrawHierarchy.GetBuffer();
+	hierarchyInfo.buffer = rttGUIDrawHierarchy.GetBuffer(); 
 	hierarchyInfo.range = rttGUI()->drawHierarchy.size()*4;
 
 
@@ -636,6 +686,10 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wds2.dstSet = descSet;
 	wds3.dstSet = descSet;
 	wds4.dstSet = descSet;
+	wds7.dstSet = descSet;
+	wds8.dstSet = descSet;
+	wds9.dstSet = descSet;
+	wds10.dstSet = descSet;
 
 	wdsRes.dstSet = descSet;
 	wdsRes.dstBinding = 1;
@@ -653,38 +707,18 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	wdsFont.descriptorCount = 1;
 	wdsFont.pImageInfo = &fontImageInfo;
 
-	VkWriteDescriptorSet wdss2[] = { wds, wdsRes, wdsAmount, wdsHierarchy,wdsFont, wds2,wds3,wds3,wds4 };
-	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 9, wdss2, 0, nullptr);
+	VkWriteDescriptorSet wdss2[] = { wds, wdsRes, wdsAmount, wdsHierarchy,wdsFont, wds2,wds3,wds3,wds4,wds9,wds10,wds7,wds8 };
+	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 13, wdss2, 0, nullptr);
 
 	wds3.dstSet = descSetAtrous;
 	wds4.dstSet = descSetAtrous;
+	wds7.dstSet = descSetAtrous;
+	wds8.dstSet = descSetAtrous;
 	wds5.dstSet = descSetAtrous;
 	wds6.dstSet = descSetAtrous;
 
-	VkDescriptorImageInfo imageInfo7 = {};
-	imageInfo7.imageView = direct2.imageView.GetImageView();
-	imageInfo7.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-	VkWriteDescriptorSet wds7 = {};
-	wds7.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	wds7.dstSet = descSetAtrous;
-	wds7.dstBinding = 14;
-	wds7.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	wds7.descriptorCount = 1;
-	wds7.pImageInfo = &imageInfo7;
-
-
-	VkDescriptorImageInfo imageInfo8 = {};
-	imageInfo8.imageView = indirect2.imageView.GetImageView();
-	imageInfo8.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-
-	VkWriteDescriptorSet wds8 = {};
-	wds8.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	wds8.dstSet = descSetAtrous;
-	wds8.dstBinding = 15;
-	wds8.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	wds8.descriptorCount = 1;
-	wds8.pImageInfo = &imageInfo8;
+	
 
 	VkWriteDescriptorSet wdssAtrous[] = { wds3,wds4, wds5,wds6, wds7,wds8 };
 	vkUpdateDescriptorSets(logicalDevice.GetDevice(), 6, wdssAtrous, 0, nullptr);
@@ -705,7 +739,7 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, atrousPipeline.GetPipeline());
 	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, atrousPipeline.GetPipelineLayout(), 0, 1, &descSetAtrous, 0, nullptr);
-	int atrousSize = 1;
+	/*int atrousSize = 1;
 	vkCmdPushConstants(commandBuffer.GetBuffer(), atrousPipeline.GetPipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, 4, &atrousSize);
 	vkCmdDispatch(commandBuffer.GetBuffer(), resolution[0]/32.0+1, resolution[1] / 32.0 + 1, 1);
 	atrousSize = 2;
@@ -722,7 +756,8 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	vkCmdDispatch(commandBuffer.GetBuffer(), resolution[0] / 32.0 + 1, resolution[1] / 32.0 + 1, 1);
 	atrousSize = 6;
 	vkCmdPushConstants(commandBuffer.GetBuffer(), atrousPipeline.GetPipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, 4, &atrousSize);
-	vkCmdDispatch(commandBuffer.GetBuffer(), resolution[0] / 32.0 + 1, resolution[1] / 32.0 + 1, 1);
+	vkCmdDispatch(commandBuffer.GetBuffer(), resolution[0] / 32.0 + 1, resolution[1] / 32.0 + 1, 1);*/
+
 
 
 	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.GetPipeline());
@@ -742,7 +777,44 @@ void VulkanLayer::Draw()
 	//rttGUIDrawHierarchy = rttvk::Buffer(&logicalDevice,rttGUI()->drawHierarchy.size()*4+8,VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 	//rttGUIDrawHierarchy.Create();
 	vkDeviceWaitIdle(logicalDevice.GetDevice());
+	if (shouldResize) {
+		albedo.Destroy();
+		albedo = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
+		albedo.Create();
 
+		indirect.Destroy();
+		indirect = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
+		indirect.Create();
+
+		direct.Destroy();
+		direct = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
+		direct.Create();
+
+		direct2.Destroy();
+		direct2 = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
+		direct2.Create();
+
+		indirect2.Destroy();
+		indirect2 = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
+		indirect2.Create();
+
+		worldPos.Destroy();
+		worldPos = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
+		worldPos.Create();
+
+		normal.Destroy();
+		normal = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
+		normal.Create();
+
+		directPrev.Destroy();
+		directPrev = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
+		directPrev.Create();
+
+		indirectPrev.Destroy();
+		indirectPrev = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
+		indirectPrev.Create();
+		shouldResize = false;
+	}
 	tlas.Recreate();
 
 	lightsBuffer.Destroy();
@@ -823,32 +895,6 @@ void VulkanLayer::Resize()
 		imageViews[i] = rttvk::ImageView(&logicalDevice, images[0]);
 		imageViews[i].Create();
 	}
-	albedo.Destroy();
-	albedo = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
-	albedo.Create();
-
-	indirect.Destroy();
-	indirect = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
-	indirect.Create();
-
-	direct.Destroy();
-	direct = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
-	direct.Create();
-
-	direct2.Destroy();
-	direct2 = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
-	direct2.Create();
-
-	indirect2.Destroy();
-	indirect2 = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
-	indirect2.Create();
-
-	worldPos.Destroy();
-	worldPos = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
-	worldPos.Create();
-
-	normal.Destroy();
-	normal = rttvk::Image(&logicalDevice, resolution[0], resolution[1], VK_FORMAT_R32G32B32_SFLOAT);
-	normal.Create();
+	shouldResize = true;
 }
 

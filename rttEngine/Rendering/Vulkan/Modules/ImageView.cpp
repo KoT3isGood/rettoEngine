@@ -4,6 +4,13 @@ namespace rttvk {
 	{
 		this->image = image;
 		this->device = device;
+		this->format = VK_FORMAT_R8G8B8A8_UNORM;
+	}
+	ImageView::ImageView(LogicalDevice* device, VkImage image, VkFormat format)
+	{
+		this->image = image;
+		this->device = device;
+		this->format = format;
 	}
 	void ImageView::Create()
 	{
@@ -11,7 +18,7 @@ namespace rttvk {
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		createInfo.image = image;
 		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		createInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+		createInfo.format = format;
 		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
