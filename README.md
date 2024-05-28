@@ -7,7 +7,7 @@ Not so fast game engine that doesn't use rasterization.
 
 ## Installation and building
 ### Prerequirements
-- Any GPU with VK_KHR_Ray_Tracing_Pipeline support
+- Any GPU with VK_KHR_ray_tracing_pipeline support
 - Vulkan API with binded path to it
 
 ### Installation
