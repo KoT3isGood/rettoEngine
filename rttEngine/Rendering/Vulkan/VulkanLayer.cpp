@@ -751,8 +751,8 @@ void VulkanLayer::RecordCommandBuffer(uint32_t imageIndex)
 	
 	vkCmdTraceRaysKHR(commandBuffer.GetBuffer(), &rgenRegion, &rmissRegion, &rchitRegion, &sbt_null, resolution[0], resolution[1], 1);
 
-	vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, atrousPipeline.GetPipeline());
-	vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, atrousPipeline.GetPipelineLayout(), 0, 1, &descSetAtrous, 0, nullptr);
+	//vkCmdBindPipeline(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, atrousPipeline.GetPipeline());
+	//vkCmdBindDescriptorSets(commandBuffer.GetBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, atrousPipeline.GetPipelineLayout(), 0, 1, &descSetAtrous, 0, nullptr);
 	/*int atrousSize = 1;
 	vkCmdPushConstants(commandBuffer.GetBuffer(), atrousPipeline.GetPipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, 4, &atrousSize);
 	vkCmdDispatch(commandBuffer.GetBuffer(), resolution[0]/32.0+1, resolution[1] / 32.0 + 1, 1);

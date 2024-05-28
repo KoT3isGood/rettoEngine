@@ -67,7 +67,7 @@ private:
 
 		},{
 			//"VK_LAYER_LUNARG_api_dump",
-			"VK_LAYER_KHRONOS_validation"
+			//"VK_LAYER_KHRONOS_validation"
 		});
 
 	rttvk::DebugMessenger debugMessenger = rttvk::DebugMessenger(&instance);

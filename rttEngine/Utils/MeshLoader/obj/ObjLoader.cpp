@@ -102,9 +102,13 @@ OBJLoader::OBJLoader(std::string file, MeshData* mesh)
 								materialNameLenght++;
 							}
 							sm = "Content/Textures/" + sm;
+							if (sm == "Content/Textures/textures/lion.tga") {
+								RTT_LOG("123");
+							}
+;
 							Material* currentMat = &mesh->materialsArray[currentMaterial];
 							AssetRegistry* ar = &GetProcessInfo()->assetRegistry;
-							currentMat->albedoTexture = GetProcessInfo()->assetRegistry.textures[sm];
+							currentMat->albedoTexture = ar->textures[sm];
 						}
 					}
 				}

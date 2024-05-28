@@ -6,8 +6,8 @@ Sun::Sun()
 
 void Sun::Tick(float deltaTime)
 {
-	light.pos[0] = -3000;
-	light.pos[1] = 2000;
+	light.pos[0] = 0000;
+	light.pos[1] = 3500;
 	light.pos[2] = 10000;
 	light.size = 500;
 
