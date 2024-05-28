@@ -7,6 +7,7 @@ Not so fast game engine that doesn't use rasterization.
 
 ## Installation and building
 ### Prerequirements
+- Any GPU with VK_KHR_Ray_Tracing_Pipeline support
 - Vulkan API with binded path to it
 
 ### Installation
@@ -18,4 +19,4 @@ Now you can create new projects using ReTTo
 
 You can use your own project to create games with ReTTo. Just make sure to include headers and link rttEngine library.
 
-You may use standart int main() but there is built-in CREATE_GAME(AppInfo) macro.
+You may use standart int main() but there is built-in CREATE_GAME(AppInfo) macro that does it for you.
